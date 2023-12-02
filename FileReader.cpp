@@ -16,16 +16,16 @@ vector<string> FileReader::ReadFileRows(const string& filePath) {
 
 vector<vector<string>> FileReader::ReadFileRowsByKey(const string& filePath, const string& key) {
     vector<vector<string>> file;
-    vector<string> rows = FileReader::ReadFileRows(filePath);
+    vector<string> rows = ReadFileRows(filePath);
     for (const auto & row : rows) {
-        vector<string> splitLine = FileReader::SplitByKey(row, key);
+        vector<string> splitLine = SplitByKey(row, key);
         file.push_back(splitLine);
     }
     return file;
 }
 
 vector<vector<string>> FileReader::ReadFileColumnsByKey(const string& filePath, const string& key) {
-    vector<vector<string>> file = FileReader::ReadFileRowsByKey(filePath, key);
+    vector<vector<string>> file = ReadFileRowsByKey(filePath, key);
     vector<vector<string>> columns;
     for (int i = 0; i < file[0].size(); ++i) {
         vector<string> temp;
@@ -124,7 +124,7 @@ bool FileReader::Contains(const string &line, const string &key) {
 bool FileReader::Contains(const string &line, const vector<string>& values) {
     int containsCount = 0;
     for (const auto & value : values) {
-        if(FileReader::Contains(line, value)) containsCount++;
+        if(Contains(line, value)) containsCount++;
     }
     return (containsCount == values.size());
 }
