@@ -1,5 +1,7 @@
 #include "FileReader.h"
 
+#include <utility>
+
 vector<string> FileReader::ReadFileRows(const string& filePath) {
     vector<string> allLines;
     ifstream file(filePath);
@@ -48,24 +50,40 @@ vector<string> FileReader::SplitByKey(const string& line, const string& key) {
     return cutLine;
 }
 
+
+string FileReader::ReplaceLine(string &line, const string &key, const string &toReplace) {
+    vector<string> row = SplitByKey(line, key);
+
+    string construct;
+    for (int j = 0; j < row.size()-1; ++j) {
+        construct += row[j] + toReplace;
+    }
+
+    if(line.find(key, line.length() - key.length()) < line.length()) construct += row[row.size()-1] + toReplace;
+    else construct += row[row.size()-1];
+
+    if(construct.length() > 0) line = construct;
+
+    return line;
+}
+
 void FileReader::ReplaceAllAbsolute(vector<string>& file, const string& key, const string& toReplace) {
-    for (auto & i : file) {
-        vector<string> row = FileReader::SplitByKey(i, key);
-
-        string construct;
-        for (int j = 0; j < row.size()-1; ++j) {
-            construct += row[j] + toReplace;
-        }
-
-        if(i.find(key, i.length() - key.length()) < i.length()) construct += row[row.size()-1] + toReplace;
-        else construct += row[row.size()-1];
-
-        if(construct.length() > 0) i = construct;
+    for (auto & line : file) {
+        ReplaceLine(line, key, toReplace);
     }
 }
+
 vector<string> FileReader::ReplaceAll(vector<string> file, const string &key, const string &toReplace) {
     FileReader::ReplaceAllAbsolute(file, key, toReplace);
     return file;
+}
+
+vector<string> FileReader::ReplaceAll(vector<string> file, const vector<string> &keys, const string &toReplace) {
+    vector<string> replace = std::move(file);
+    for (const auto & key : keys) {
+        replace = FileReader::ReplaceAll(replace, key, toReplace);
+    }
+    return replace;
 }
 
 int FileReader::GetLineCount(const string& filePath)
@@ -96,6 +114,19 @@ int FileReader::GetSizeOfLineWithoutKey(const string& line, string key) {
     }
 
     return totalCount;
+}
+
+bool FileReader::Contains(const string &line, const string &key) {
+    vector<string> split = FileReader::SplitByKey(line, key);
+    return split.size() != 1;
+}
+
+bool FileReader::Contains(const string &line, const vector<string>& values) {
+    int containsCount = 0;
+    for (const auto & value : values) {
+        if(FileReader::Contains(line, value)) containsCount++;
+    }
+    return (containsCount == values.size());
 }
 
 void FileReader::PrintVector(const vector<string>& v, const string& title) {
