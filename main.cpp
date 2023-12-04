@@ -12,7 +12,6 @@ void DayThree_2(vector<vector<string>> rows2D, vector<string> rows);
 
 void DayFour(vector<string> rows);
 void DayFour_2(vector<string> rows);
-int DayFour_2_Helper(const vector<string> &rows, int total, vector<string> copyCardsCards);
 
 
 int main() {
@@ -24,40 +23,13 @@ int main() {
 }
 
 void DayFour_2(vector<string> rows){
+    vector<int> copyMatches;
     vector<vector<string>> copyCardRows;
     for (int i = 0; i < rows.size(); ++i) {
         vector<string> winningNumbers = FileReader::RemoveEmpty(
                 FileReader::SplitBySpace(FileReader::SplitByKey(FileReader::SplitByKey(rows[i], "|")[0], ":")[1]));
         vector<string> numbers = FileReader::RemoveEmpty(
                 FileReader::SplitBySpace(FileReader::SplitByKey(rows[i], "|")[1]));
-
-        vector<string> copyCard;
-        int matches = 0;
-        for (int j = 0; j < numbers.size(); ++j) {
-            for (int k = 0; k < winningNumbers.size(); ++k) {
-                if (numbers[j] == winningNumbers[k]) {
-                    matches++;
-                }
-            }
-        }
-        for (int j = i + 1; j < min(i + matches + 1, static_cast<int>(rows.size())); ++j) {
-            copyCard.push_back(rows[j]);
-        }
-        copyCardRows.push_back(copyCard);
-    }
-
-
-    int total = DayFour_2_Helper(rows, 0, copyCardRows);
-    cout << "Total: " << total << endl;
-}
-int DayFour_2_Helper(const vector<string> &rows, int total, vector<string> copyCardsCards) {
-    for (int i = 0; i < rows.size(); ++i) {
-        vector<string> winningNumbers = FileReader::RemoveEmpty(
-                FileReader::SplitBySpace(FileReader::SplitByKey(FileReader::SplitByKey(rows[i], "|")[0], ":")[1]));
-        vector<string> numbers = FileReader::RemoveEmpty(
-                FileReader::SplitBySpace(FileReader::SplitByKey(rows[i], "|")[1]));
-
-        vector<string> copyCardRows;
         int matches = 0;
         for (int j = 0; j < numbers.size(); ++j) {
             for (int k = 0; k < winningNumbers.size(); ++k) {
@@ -67,17 +39,33 @@ int DayFour_2_Helper(const vector<string> &rows, int total, vector<string> copyC
                 }
             }
         }
+        copyMatches.push_back(matches);
+
+        vector<string> copyCard;
         for (int j = i+1; j < min(i+matches+1, static_cast<int>(rows.size())); ++j) {
-            copyCardRows.push_back(rows[j]);
+            copyCard.push_back(rows[j]);
         }
-        FileReader::PrintVector(copyCardRows, "Copy Cards");
-        cout << "-----------------" << endl;
-
-        if(!copyCardRows.empty()) total = DayFour_2_Helper(copyCardRows, total + rows.size());
+        copyCardRows.push_back(copyCard);
     }
-    return total;
-}
+    vector<int> totalCards;
+    for (int i = 0; i < copyMatches.size(); ++i) {
+        totalCards.push_back(1);
+    }
 
+    for (int i = 0; i < copyMatches.size(); ++i) {
+        for (int k  = 0; k < totalCards[i]; ++k) {
+            for (int j = i + 1; j < i + copyMatches[i] + 1; ++j) {
+                totalCards[j]++;
+            }
+        }
+    }
+
+    int total = 0;
+    for (int i = 0; i < totalCards.size(); ++i) {
+        total += totalCards[i];
+    }
+    cout << "Total: " << total << endl;
+}
 void DayFour(vector<string> rows){
     int total = 0;
     for (int i = 0; i < rows.size(); ++i) {
