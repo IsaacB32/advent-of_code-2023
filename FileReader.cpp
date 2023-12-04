@@ -85,6 +85,8 @@ vector<string> FileReader::SplitByCharacter(const string &line) {
 
 
 string FileReader::ReplaceLine(string &line, const string &key, const string &toReplace) {
+    if(!Contains(line, key)) return line;
+
     vector<string> row = SplitByKey(line, key);
 
     string construct;
@@ -101,7 +103,7 @@ string FileReader::ReplaceLine(string &line, const string &key, const string &to
 }
 
 void FileReader::ReplaceAllAbsolute(vector<string>& file, const string& key, const string& toReplace) {
-    for (auto & line : file) {
+    for (string & line : file) {
         ReplaceLine(line, key, toReplace);
     }
 }
@@ -117,6 +119,24 @@ vector<string> FileReader::ReplaceAll(vector<string> file, const vector<string> 
         replace = FileReader::ReplaceAll(replace, key, toReplace);
     }
     return replace;
+}
+
+vector<string> FileReader::RemoveEmpty(vector<string> list) {
+    vector<string> fill;
+    for (int i = 0; i < list.size(); ++i) {
+        if(!list[i].empty()) fill.push_back(list[i]);
+    }
+    return fill;
+}
+
+//Not currently working
+vector<int> FileReader::StringToInt(vector<string> integerList) {
+    ReplaceAllAbsolute(integerList, " ", "");
+    vector<int> integer;
+    for (int i = 0; i < integerList.size(); ++i) {
+        if(!integerList.empty()) integer.push_back(stoi(integerList[i]));
+    }
+    return integer;
 }
 
 int FileReader::GetLineCount(const string& filePath)

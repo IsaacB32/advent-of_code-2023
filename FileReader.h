@@ -33,10 +33,15 @@ public:
     static vector<string> ReplaceAll(vector<string> file, const string& key, const string& toReplace);
     static vector<string> ReplaceAll(vector<string> file, const vector<string>& keys, const string& toReplace);
 
+    static vector<string> RemoveEmpty(vector<string> list);
+    static vector<int> StringToInt(vector<string> integerList);
+
     static int GetLineCount(const string& filePath);
     static int GetSizeOfLineWithoutKey(const string& line, string key);
 
+    //(line, key)
     static bool Contains(const string& line, const string& key);
+    //(line, values, containsAll)
     static bool Contains(const string& line, const vector<string>& values, bool containsAll);
 
     static inline bool CheckForNeighbor(vector<vector<string>> grid, const string& key, int rowIndex, int columnIndex, int range)
