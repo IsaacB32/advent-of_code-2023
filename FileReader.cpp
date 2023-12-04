@@ -17,8 +17,11 @@ vector<string> FileReader::ReadFileRows(const string& filePath) {
 vector<vector<string>> FileReader::ReadFileRowsByKey(const string& filePath, const string& key) {
     vector<vector<string>> file;
     vector<string> rows = ReadFileRows(filePath);
-    for (const auto & row : rows) {
-        vector<string> splitLine = SplitByKey(row, key);
+    for (int i = 0; i < rows.size(); i++) {
+        vector<string> splitLine;
+        if(key.empty()) splitLine = SplitByCharacter(rows[i]);
+        else splitLine = SplitByKey(rows[i], key);
+
         file.push_back(splitLine);
     }
     return file;
@@ -40,12 +43,42 @@ vector<vector<string>> FileReader::ReadFileColumnsByKey(const string& filePath, 
 vector<string> FileReader::SplitByKey(const string& line, const string& key) {
     vector<string> cutLine;
     int startingIndex = 0;
-    while(startingIndex < line.length()){
+    int loopGuardCount = 1000000000;
+    while(startingIndex < line.length() && loopGuardCount > 0){
         int keyIndex = (int)line.find(key, startingIndex);
         if(keyIndex == -1) keyIndex = (int)line.length();
 
         cutLine.push_back(line.substr(startingIndex, keyIndex - startingIndex));
         startingIndex = keyIndex + (int)key.length();
+
+        loopGuardCount--;
+    }
+    if(loopGuardCount <= 0) cout << "Fatale Error -- Infinite Loop" << endl;
+    return cutLine;
+}
+
+//uses any of the provided vector<string> values to split the string
+vector<string> FileReader::SplitByKey(const string& line, const vector<string>& keys) {
+    vector<string> cutFile;
+    string split;
+    for (int i = 0; i < line.length(); ++i) {
+        if(!FileReader::Contains(string(1, line[i]), keys, false))
+        {
+            split += line[i];
+        }
+        else {
+            if(!split.empty()) cutFile.push_back(split);
+            split = "";
+        }
+    }
+    if(!split.empty()) cutFile.push_back(split);
+    return cutFile;
+}
+
+vector<string> FileReader::SplitByCharacter(const string &line) {
+    vector<string> cutLine;
+    for (int i = 0; i < line.length(); ++i) {
+        cutLine.push_back(line.substr(i, 1));
     }
     return cutLine;
 }
@@ -122,12 +155,37 @@ bool FileReader::Contains(const string &line, const string &key) {
     return split.size() != 1;
 }
 
-bool FileReader::Contains(const string &line, const vector<string>& values) {
+bool FileReader::Contains(const string &line, const vector<string>& values, bool containsAll) {
     int containsCount = 0;
     for (const auto & value : values) {
-        if(Contains(line, value)) containsCount++;
+        if(Contains(line, value)) {
+            if(!containsAll) return true;
+            containsCount++;
+        }
     }
     return (containsCount == values.size());
+}
+
+bool FileReader::CheckForNeighbor(vector<vector<string>> grid, const vector<string>& keys, int rowIndex, int columnIndex, int range) {
+    vector<int> position = GetNeighbor(std::move(grid), keys, rowIndex, columnIndex, range);
+    return (position.size() == 2);
+}
+
+//returns the first instance of a key or list of keys
+vector<int> FileReader::GetNeighbor(vector<vector<string>> grid, const vector<string>& keys, int rowIndex, int columnIndex, int range){
+    for (int i = rowIndex-range; i < rowIndex+range+1; ++i) { //row
+        if(i < 0 || i >= grid.size()) continue;
+        for (int j = columnIndex-range; j < columnIndex+range+1; ++j) { //column
+            if(j < 0 || j >= grid[i].size()) continue;
+            string neighbor = grid[i][j];
+            if(FileReader::Contains(neighbor, keys, false)){
+                vector<int> position = {i, j};
+                return position;
+            }
+        }
+    }
+    vector<int> position = {-1};
+    return position;
 }
 
 void FileReader::PrintVector(const vector<string>& v, const string& title) {

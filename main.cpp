@@ -7,9 +7,81 @@ void DayOne(vector<string> rows);
 void DayTwo(vector<string> rows);
 void DayTwo_2(vector<string> rows);
 
-int main() {
-    vector<string> rows = FileReader::ReadFileRows(filePath);
+void DayThree(vector<vector<string>> rows2D, vector<string> rows);
+void DayThree_2(vector<vector<string>> rows2D, vector<string> rows);
 
+int main() {
+    vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
+    vector<string> rows = FileReader::ReadFileRows(filePath);
+    vector<vector<string>> columns = FileReader::ReadFileColumns(filePath);
+
+    DayThree_2(rows2D, rows);
+}
+
+void DayThree_2(vector<vector<string>> rows2D, vector<string> rows){
+    int total = 0;
+    for (int i = 0; i < rows2D.size(); ++i) {
+        vector<string> row = FileReader::SplitByKey(rows[i], FileReader::symbolsList);
+        if(row.empty()) continue;
+
+        int numberIndex = 0;
+        bool lastWasNumber = false;
+        bool checkedNumber = false;
+
+        for (int j = 0; j < rows2D[i].size(); ++j) {
+            if(!FileReader::Contains(string(1, rows[i][j]), FileReader::symbolsList, false))
+            {
+                if(FileReader::CheckForNeighbor(rows2D, "*", i, j, 1)){
+                    vector<int> pos = FileReader::GetNeighbor(rows2D, "*", i, j, 1);
+                    if(FileReader::CheckForNeighbor(rows2D, FileReader::numbersList, pos[0], pos[1], 1)) {
+                    
+                    }
+                }
+            }
+            else if(lastWasNumber)
+            {
+
+            }
+        }
+    }
+    cout << "Total: " << total << endl;
+}
+void DayThree(vector<vector<string>> rows2D, vector<string> rows){
+    int total = 0;
+    for (int i = 0; i < rows2D.size(); ++i) {
+        vector<string> row = FileReader::SplitByKey(rows[i], FileReader::symbolsList);
+        if(row.empty()) continue;
+
+        int numberIndex = 0;
+        bool lastWasNumber = false;
+        bool checkedNumber = false; //no duplicity
+
+        for (int j = 0; j < rows2D[i].size(); ++j) {
+//            cout << "Looking At: " << rows2D[i][j] << endl;
+            if(!FileReader::Contains(string(1, rows[i][j]), FileReader::symbolsList, false))
+            {
+//                cout << "LastNumber: " << lastWasNumber << endl;
+//                cout << "index: (" << i << "," << j << ")" << endl;
+                if(!checkedNumber && FileReader::CheckForNeighbor(rows2D, FileReader::symbolsListNoPeriod, i, j, 1)){
+//                    cout << "-----Row-------" << endl;
+//                    FileReader::PrintVector(row, "Row");
+//                    cout << "added number: " << row[numberIndex] << endl;
+                    total += stoi(row[numberIndex]);
+                    checkedNumber = true;
+                }
+                lastWasNumber = true;
+            }
+            else if(lastWasNumber)
+            {
+//                cout << "Reset Number Index: " << numberIndex << endl;
+                checkedNumber = false;
+                lastWasNumber = false;
+                numberIndex++;
+            }
+        }
+//        cout << "---------------New Line----------------" << endl;
+    }
+    cout << "Total: " << total << endl;
 }
 
 void DayTwo_2(vector<string>rows){
@@ -85,14 +157,12 @@ void DayOne(vector<string> rows) {
             line = FileReader::ReplaceLine(line, wordNumbers[i], replaceValue);
         }
     }
-//    FileReader::PrintVector(replace);
 
     vector<string> removedLetters = FileReader::ReplaceAll(replace, FileReader::alphabetList, "");
     for (auto & i : removedLetters) {
         char first = i[0];
         char last = i[i.length()-1];
         string stringTotal = string(1, first) + string(1,last);
-//        cout << "first: " << first << " " << "last: " << last << " total: " << stringTotal << endl;
         total += stoi(stringTotal);
     }
     cout << "Total: " << total << endl;
