@@ -166,9 +166,40 @@ bool FileReader::Contains(const string &line, const vector<string>& values, bool
     return (containsCount == values.size());
 }
 
+vector<int> FileReader::StringToInt(vector<string> values) {
+    vector<int> integer;
+    for (int i = 0; i < values.size(); ++i) {
+        integer.push_back(stoi(values[i]));
+    }
+    return integer;
+}
+
 bool FileReader::CheckForNeighbor(vector<vector<string>> grid, const vector<string>& keys, int rowIndex, int columnIndex, int range) {
     vector<int> position = GetNeighbor(std::move(grid), keys, rowIndex, columnIndex, range);
     return (position.size() == 2);
+}
+
+//checks for count existing neighbors seperated by filler spaces
+bool FileReader::CheckForNeighborCount(vector<vector<string>> grid, const vector<string>& keys, int rowIndex, int columnIndex, int range, int count) {
+    bool lookedAtNumber = false;
+    bool hasOneNumber = false;
+    for (int i = rowIndex-range; i < rowIndex+range+1; ++i) { //row
+        if(i < 0 || i >= grid.size()) continue;
+        for (int j = columnIndex-range; j < columnIndex+range+1; ++j) { //column
+            if(j < 0 || j >= grid[i].size()) continue;
+            string neighbor = grid[i][j];
+            if(FileReader::Contains(neighbor, keys, false)){
+                if(lookedAtNumber && hasOneNumber) return true;
+                lookedAtNumber = true;
+            }
+            else if(lookedAtNumber)
+            {
+                //looking at a number and then looked at dots
+                hasOneNumber = true;
+            }
+        }
+    }
+    return false;
 }
 
 //returns the first instance of a key or list of keys
@@ -189,6 +220,13 @@ vector<int> FileReader::GetNeighbor(vector<vector<string>> grid, const vector<st
 }
 
 void FileReader::PrintVector(const vector<string>& v, const string& title) {
+    cout << "-----Printing Vector: " << title << "-----" << endl;
+    for (const auto & i : v) {
+        cout << i << endl;
+    }
+    cout << endl;
+}
+void FileReader::PrintVector(const vector<int>& v, const string& title) {
     cout << "-----Printing Vector: " << title << "-----" << endl;
     for (const auto & i : v) {
         cout << i << endl;

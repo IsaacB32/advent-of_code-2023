@@ -39,6 +39,8 @@ public:
     static bool Contains(const string& line, const string& key);
     static bool Contains(const string& line, const vector<string>& values, bool containsAll);
 
+    static vector<int> StringToInt(vector<string> values);
+
     static inline bool CheckForNeighbor(vector<vector<string>> grid, const string& key, int rowIndex, int columnIndex, int range)
     {
         vector<string> keys;
@@ -46,6 +48,7 @@ public:
         return CheckForNeighbor(std::move(grid), keys, rowIndex, columnIndex, range);
     };
     static bool CheckForNeighbor(vector<vector<string>> grid, const vector<string>& keys, int rowIndex, int columnIndex, int range);
+    static bool CheckForNeighborCount(vector<vector<string>> grid, const vector<string>& keys, int rowIndex, int columnIndex, int range, int count);
     static inline vector<int> GetNeighbor(vector<vector<string>> grid, const string& key, int rowIndex, int columnIndex, int range)
     {
         vector<string> keys;
@@ -55,6 +58,7 @@ public:
     static vector<int> GetNeighbor(vector<vector<string>> grid, const vector<string>& keys, int rowIndex, int columnIndex, int range);
 
     static void PrintVector(const vector<string>& v, const string& title);
+    static void PrintVector(const vector<int>& v, const string& title);
     static void PrintVector(const vector<vector<string>>& v, const string& title);
     static inline void PrintVector(const vector<string>& v) {return PrintVector(v, "");}
     static inline void PrintVector(const vector<vector<string>>& v) {return PrintVector(v, "");}
