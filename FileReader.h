@@ -37,6 +37,7 @@ public:
 
     static vector<string> RemoveEmpty(vector<string> list);
     static vector<int> StringToInt(vector<string> integerList);
+    static vector<long long> StringToLong(vector<string> integerList);
 
     static int GetLineCount(const string& filePath);
     static int GetSizeOfLineWithoutKey(const string& line, string key);
@@ -45,6 +46,8 @@ public:
     static bool Contains(const string& line, const string& key);
     //(line, values, containsAll)
     static bool Contains(const string& line, const vector<string>& values, bool containsAll);
+    template<typename T>
+    static bool Contains(const vector<T>& search, const T& value);
 
     static inline bool CheckForNeighbor(vector<vector<string>> grid, const string& key, int rowIndex, int columnIndex, int range)
     {
@@ -61,9 +64,46 @@ public:
     };
     static vector<int> GetNeighbor(vector<vector<string>> grid, const vector<string>& keys, int rowIndex, int columnIndex, int range);
 
-    static void PrintVector(const vector<string>& v, const string& title);
-    static void PrintVector(const vector<vector<string>>& v, const string& title);
-    static inline void PrintVector(const vector<string>& v) {return PrintVector(v, "");}
-    static inline void PrintVector(const vector<vector<string>>& v) {return PrintVector(v, "");}
+//    static inline PrintVector(const vector<string>& v, const string& title);
+//    static void PrintVector(const vector<vector<string>>& v, const string& title);
+    template<typename T>
+    static void PrintVector(const vector<T>& v) {return PrintVector(v, "");}
+    template<typename T>
+    static void PrintVector(const vector<vector<T>>& v) {return PrintVector(v, "");}
+
+    template<typename T>
+    static void PrintVector(const vector<T>& v, const string& title);
+    template<typename T>
+    static void PrintVector(const vector<vector<T>>& v, const string& title);
 };
+
+template <typename T>
+bool FileReader::Contains(const std::vector<T>& search, const T& value) {
+    for (const T& element : search) {
+        if (element == value) {
+            return true;
+        }
+    }
+    return false;
+}
+
+template <typename T>
+void FileReader::PrintVector(const vector<T>& v, const string& title){
+    cout << "-----Printing Vector: " << title << "-----" << endl;
+    for (const auto & i : v) {
+        cout << i << endl;
+    }
+    cout << endl;
+}
+template <typename T>
+void FileReader::PrintVector(const vector<vector<T>>& v, const string& title) {
+    cout << "-----Printing 2D Vector: " << title << "-----" << endl;
+    for (const vector<T>& i : v) {
+        for (const T& j : i) {
+            cout << j << ", ";
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
 #endif //ADVENTOFCODE2023_FILEREADER_H

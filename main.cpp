@@ -1,5 +1,6 @@
 #include <utility>
 #include "FileReader.h"
+#include "algorithm"
 
 static string filePath = R"(C:\The Main File ---------\Other Stuff\Code\AdventOfCode2023\Input.txt)";
 
@@ -25,21 +26,30 @@ int main() {
 }
 
 void DayFive(vector<vector<string>> rows){
-    vector<string> seeds = FileReader::RemoveEmpty(FileReader::SplitBySpace(FileReader::SplitByKey(rows[0][0], ":")[1]));
+    vector<string> s = FileReader::RemoveEmpty(FileReader::SplitBySpace(FileReader::SplitByKey(rows[0][0], ":")[1]));
+    vector<long long> seeds = FileReader::StringToLong(s);
     for (int i = 1; i < rows.size(); ++i) { //loop rows -- skip seeds
+        vector<int> alreadyMappedSeedIndex;
         for (int j = 1; j < rows[i].size(); ++j) { //loop map rows -- skip title
-            vector<int> mapNumbers = FileReader::StringToInt(FileReader::SplitBySpace(rows[i][j]));
-            int range = mapNumbers[2];
-            vector<int> sourceRange;
-            vector<int> destinationRange;
-            //hash-map???
-            for (int k = 0; k < range; ++k) {
-                sourceRange.push_back(mapNumbers[0] + k);
-                destinationRange.push_back(mapNumbers[0] + k);
+            vector<long long> mapNumbers = FileReader::StringToLong(FileReader::SplitBySpace(rows[i][j]));
+            long long range = mapNumbers[2];
+            long long sourceRange[] = {mapNumbers[1], mapNumbers[1] + range};
+            long long destinationRange[] = {mapNumbers[0], mapNumbers[0] + range};
+            for (int k = 0; k < seeds.size(); ++k) {
+                if(!FileReader::Contains(alreadyMappedSeedIndex, k)) {
+                    if ((seeds[k] >= sourceRange[0] && seeds[k] <= sourceRange[1]) || seeds[k] == sourceRange[0] || seeds[k] == sourceRange[1])
+                    {
+                        long long difference = sourceRange[1] - seeds[k];
+                        seeds[k] = destinationRange[1] - difference;
+                        alreadyMappedSeedIndex.push_back(k);
+                    }
+                }
             }
         }
-        cout << endl;
     }
+
+    long long minElement = *min_element(seeds.begin(), seeds.end());
+    cout << "Min: " << minElement << endl;
 }
 
 void DayFour_2(vector<string> rows){

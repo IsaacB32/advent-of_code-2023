@@ -96,6 +96,7 @@ vector<vector<string>> FileReader::CutRowsByKey(const vector<string>& lines, con
             validLines.clear();
         }
     }
+    if(!validLines.empty()) output.push_back(validLines);
     return output;
 }
 
@@ -145,12 +146,19 @@ vector<string> FileReader::RemoveEmpty(vector<string> list) {
     return fill;
 }
 
-//Not currently working
 vector<int> FileReader::StringToInt(vector<string> integerList) {
-    ReplaceAllAbsolute(integerList, " ", "");
+    vector<string> removedEmpty = RemoveEmpty(integerList);
     vector<int> integer;
     for (int i = 0; i < integerList.size(); ++i) {
-        if(!integerList.empty()) integer.push_back(stoi(integerList[i]));
+        integer.push_back(stoi(integerList[i]));
+    }
+    return integer;
+}
+vector<long long> FileReader::StringToLong(vector<string> integerList) {
+    vector<string> removedEmpty = RemoveEmpty(integerList);
+    vector<long long> integer;
+    for (int i = 0; i < integerList.size(); ++i) {
+        integer.push_back(stoll(integerList[i]));
     }
     return integer;
 }
@@ -222,24 +230,6 @@ vector<int> FileReader::GetNeighbor(vector<vector<string>> grid, const vector<st
     }
     vector<int> position = {-1};
     return position;
-}
-
-void FileReader::PrintVector(const vector<string>& v, const string& title) {
-    cout << "-----Printing Vector: " << title << "-----" << endl;
-    for (const auto & i : v) {
-        cout << i << endl;
-    }
-    cout << endl;
-}
-void FileReader::PrintVector(const vector<vector<string>>& v, const string& title) {
-    cout << "-----Printing 2D Vector: " << title << "-----" << endl;
-    for (const auto & i : v) {
-        for (const auto & j : i) {
-            cout << j << ", ";
-        }
-        cout << endl;
-    }
-    cout << endl;
 }
 
 
