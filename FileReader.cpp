@@ -83,6 +83,22 @@ vector<string> FileReader::SplitByCharacter(const string &line) {
     return cutLine;
 }
 
+//cuts into 2D vector by row-key
+vector<vector<string>> FileReader::CutRowsByKey(const vector<string>& lines, const string &key) {
+    vector<vector<string>> output;
+    vector<string> validLines;
+    for (int i = 0; i < lines.size(); ++i) {
+        if(lines[i] != key){
+            validLines.push_back(lines[i]);
+        }
+        else {
+            output.push_back(validLines);
+            validLines.clear();
+        }
+    }
+    return output;
+}
+
 
 string FileReader::ReplaceLine(string &line, const string &key, const string &toReplace) {
     if(!Contains(line, key)) return line;

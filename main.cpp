@@ -13,13 +13,33 @@ void DayThree_2(vector<vector<string>> rows2D, vector<string> rows);
 void DayFour(vector<string> rows);
 void DayFour_2(vector<string> rows);
 
+void DayFive(vector<vector<string>> rows);
 
 int main() {
-    vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
+//    vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
     vector<string> rows = FileReader::ReadFileRows(filePath);
-    vector<vector<string>> columns = FileReader::ReadFileColumns(filePath);
+//    vector<vector<string>> columns = FileReader::ReadFileColumns(filePath);
 
-    DayFour_2(rows);
+    vector<vector<string>> cutRows = FileReader::CutRowsByKey(rows, "");
+    DayFive(cutRows);
+}
+
+void DayFive(vector<vector<string>> rows){
+    vector<string> seeds = FileReader::RemoveEmpty(FileReader::SplitBySpace(FileReader::SplitByKey(rows[0][0], ":")[1]));
+    for (int i = 1; i < rows.size(); ++i) { //loop rows -- skip seeds
+        for (int j = 1; j < rows[i].size(); ++j) { //loop map rows -- skip title
+            vector<int> mapNumbers = FileReader::StringToInt(FileReader::SplitBySpace(rows[i][j]));
+            int range = mapNumbers[2];
+            vector<int> sourceRange;
+            vector<int> destinationRange;
+            //hash-map???
+            for (int k = 0; k < range; ++k) {
+                sourceRange.push_back(mapNumbers[0] + k);
+                destinationRange.push_back(mapNumbers[0] + k);
+            }
+        }
+        cout << endl;
+    }
 }
 
 void DayFour_2(vector<string> rows){

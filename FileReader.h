@@ -28,6 +28,8 @@ public:
     static inline vector<string>SplitByDoubleSpace(const string& line){return SplitByKey(line, "  ");}
     static inline vector<string>SplitByPeriod(const string& line){return SplitByKey(line, ".");}
 
+    static vector<vector<string>> CutRowsByKey(const vector<string>& lines, const string& key);
+
     static string ReplaceLine(string& line, const string& key, const string& toReplace);
     static void ReplaceAllAbsolute(vector<string>& file, const string& key, const string& toReplace);
     static vector<string> ReplaceAll(vector<string> file, const string& key, const string& toReplace);
