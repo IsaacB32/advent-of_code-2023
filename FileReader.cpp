@@ -99,6 +99,22 @@ vector<vector<string>> FileReader::CutRowsByKey(const vector<string>& lines, con
     if(!validLines.empty()) output.push_back(validLines);
     return output;
 }
+//cuts into 2D vector every value
+vector<vector<string>> FileReader::CutRowsByNumber(const vector<string>& lines, const int &value) {
+    vector<vector<string>> output;
+    vector<string> validLines;
+    for (int i = 0; i < lines.size(); ++i) {
+        if(i % value == 0){
+            validLines.push_back(lines[i]);
+        }
+        else {
+            output.push_back(validLines);
+            validLines.clear();
+        }
+    }
+    if(!validLines.empty()) output.push_back(validLines);
+    return output;
+}
 
 
 string FileReader::ReplaceLine(string &line, const string &key, const string &toReplace) {
