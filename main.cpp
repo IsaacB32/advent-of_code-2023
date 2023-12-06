@@ -15,13 +15,33 @@ void DayFour_2(vector<string> rows);
 void DayFive(vector<vector<string>> rows);
 void DayFive_2(vector<vector<string>> rows);
 
+void DaySix(vector<string> rows);
+
 int main() {
 //    vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
     vector<string> rows = FileReader::ReadFileRows(filePath);
 //    vector<vector<string>> columns = FileReader::ReadFileColumns(filePath);
+//    vector<vector<string>> cutRows = FileReader::CutRowsByKey(rows, "");
 
-    vector<vector<string>> cutRows = FileReader::CutRowsByKey(rows, "");
-    DayFive_2(cutRows);
+    DaySix(rows);
+}
+
+void DaySix(vector<string> rows){
+    string timesS = FileReader::ReplaceAll(FileReader::SplitByKey(rows[0], ":"), " ", "")[1];
+    string distancesS = FileReader::ReplaceAll(FileReader::SplitByKey(rows[1], ":"), " ", "")[1];
+    vector<int> wins;
+
+    cout << "Times: " << timesS << endl;
+    cout << "Distances: " << distancesS << endl;
+
+    long long times = stoll(timesS);
+    long long distances = stoll(distancesS);
+
+    int timeWin = 0;
+    for (int j = 0; j < times; ++j) {
+        if(j * (times - j) > distances) timeWin++;
+    }
+    cout << "Total: " << timeWin << endl; //29891250
 }
 
 long long ProcessSeed(long long seed, vector<vector<long long*>> ranges)
