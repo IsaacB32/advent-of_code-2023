@@ -52,20 +52,105 @@ long long ProcessSeed(long long seed, vector<vector<long long*>> ranges)
     }
     return seedValue;
 }
+vector<long long*> ProcessRanges(vector<long long*> seedRange, vector<long long*> ranges){
+    vector<long long*> newSeedRanges;
+    vector<int> seedMappedIndecies = {-1};
+    for (int i = 0; i < ranges.size(); i+=2) {
+        long long sourceMin = ranges[i][0];
+        long long sourceMax = ranges[i][1];
+        long long destinationMin = ranges[i+1][0];
+        long long destinationMax = ranges[i+1][1];
+
+        for (int j = 0; j < seedRange.size(); ++j) {
+            if(FileReader::Contains(seedMappedIndecies, j)) continue;
+            long long seedMin = seedRange[j][0];
+            long long seedMax = seedRange[j][1];
+            long long maxDistance = sourceMax - seedMax;
+            long long minDistance = seedMin - sourceMin;
+
+            if(seedMax < sourceMin || seedMin > sourceMax) continue; // -S-M--|-----|--S-M--
+            else if(seedMin < sourceMin && seedMax <= sourceMax) // -S----|---M--|------
+            {
+                long long* r1 = new long long[2];
+                r1[0] = seedMin;
+                r1[1] = sourceMin-1;
+                long long* r2 = new long long[2];
+                r2[0] = destinationMin;
+                r2[1] = destinationMax - maxDistance;
+
+                seedRange.push_back(r1);
+                newSeedRanges.push_back(r2);
+                seedMappedIndecies.push_back(j);
+            }
+            else if(seedMin >= sourceMin && seedMax <= sourceMax) // ----|-S--M--|------
+            {
+                long long* r1 = new long long[2];
+                r1[0] = destinationMin + minDistance;
+                r1[1] = destinationMax - maxDistance;
+                newSeedRanges.push_back(r1);
+                seedMappedIndecies.push_back(j);
+            }
+            else if(seedMin >= sourceMin && seedMax > sourceMax) // ----|-S----|--M----
+            {
+                long long* r1 = new long long[2];
+                r1[0] = destinationMin + minDistance;
+                r1[1] = destinationMax;
+                long long* r2 = new long long[2];
+                r2[0] = sourceMax + 1;
+                r2[1] = seedMax;
+
+                newSeedRanges.push_back(r1);
+                seedRange.push_back(r2);
+                seedMappedIndecies.push_back(j);
+            }
+            else if(seedMin < sourceMin && seedMax > sourceMax) // --S--|-----|--M----
+            {
+                long long* r1 = new long long[2];
+                r1[0] = seedMin;
+                r1[1] = sourceMin - 1;
+                long long* r2 = new long long[2];
+                r2[0] = destinationMin;
+                r2[1] = destinationMax;
+                long long* r3 = new long long[2];
+                r3[0] = sourceMax + 1;
+                r3[1] = seedMax;
+                seedRange.push_back(r1);
+                newSeedRanges.push_back(r2);
+                seedRange.push_back(r3);
+                seedMappedIndecies.push_back(j);
+            }
+        }
+    }
+
+    for (int j = 0; j < seedRange.size(); ++j) {
+        if(!FileReader::Contains(seedMappedIndecies, j))
+        {
+            long long seedMin = seedRange[j][0];
+            long long seedMax = seedRange[j][1];
+            long long* r1 = new long long[2];
+            r1[0] = seedMin;
+            r1[1] = seedMax;
+            newSeedRanges.push_back(r1);
+        }
+    }
+
+    return newSeedRanges;
+}
 void DayFive_2(vector<vector<string>> rows){
     //3 values deep
     //[i][j][k]
     //i = mapIndex
     //j = rowIndex
     //k = ranges (0 = source, 1 = destination)
-    vector<vector<long long*>> ranges;
 
+    //process map ranges
+    vector<vector<long long*>> ranges;
     for (int i = 1; i < rows.size(); ++i) { //loop rows -- skip seeds
         vector<long long*> r;
         for (int j = 1; j < rows[i].size(); ++j) { //loop map rows -- skip title
             vector<long long> mapNumbers = FileReader::StringToLong(FileReader::SplitBySpace(rows[i][j]));
             long long range = mapNumbers[2];
-//            cout << "Range: " << range  << endl;
+
             long long *sourceRange = new long long[2];
             sourceRange[0] = mapNumbers[1];
             sourceRange[1] = mapNumbers[1] + range;
@@ -80,6 +165,7 @@ void DayFive_2(vector<vector<string>> rows){
         ranges.push_back(r);
     }
 
+    //process seed ranges
     vector<string> s = FileReader::RemoveEmpty(FileReader::SplitBySpace(FileReader::SplitByKey(rows[0][0], ":")[1]));
     vector<long long> seeds = FileReader::StringToLong(s);
     vector<long long*> pairs;
@@ -90,12 +176,29 @@ void DayFive_2(vector<vector<string>> rows){
         pairs.push_back(pair);
     }
 
-    long long lowest = LONG_LONG_MAX;
+    for (int i = 0; i < ranges.size(); ++i) {
+        vector<long long*> currentMap = ranges[i];
+        pairs = ProcessRanges(pairs, currentMap);
+//        for (int j = 0; j < pairs.size(); ++j) {
+//            cout << "Pair " << j << ": " << pairs[j][0] << "--" << pairs[j][1] << endl;
+//        }
+//        cout << "--------" << endl;
+    }
+
+    long long lowest = pairs[0][0];
+    for (int i = 1; i < pairs.size(); ++i) {
+        if(pairs[i][0] < lowest) lowest = pairs[i][0];
+    }
+    cout << "Lowest: " << lowest << endl;
+    // < 12634633
+
+    cout << "Pairs Size: " << pairs.size() << endl;
     for (int i = 0; i < pairs.size(); ++i) {
-        for (long long  j = pairs[i][0]; j < pairs[i][1]; ++j) {
-            long long value = ProcessSeed(j, ranges);
-            if(value < lowest) lowest = value;
+        cout << "Pairs " << i << ": ";
+        for (int j = 0; j < 2; ++j) {
+            cout << pairs[i][j] << " ";
         }
+        cout << "\n------" << endl;
     }
     cout << "Lowest: " << lowest << endl;
 
