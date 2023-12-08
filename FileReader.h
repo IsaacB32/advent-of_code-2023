@@ -80,6 +80,8 @@ public:
 
 template <typename T>
 bool FileReader::Contains(const std::vector<T>& search, const T& value) {
+    if(search.empty()) return false;
+
     for (const T& element : search) {
         if (element == value) {
             return true;

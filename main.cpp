@@ -1,5 +1,6 @@
 #include <utility>
 #include "FileReader.h"
+#include "PQueue.h"
 #include "algorithm"
 
 static string filePath = R"(C:\The Main File ---------\Other Stuff\Code\AdventOfCode2023\Input.txt)";
@@ -17,14 +18,148 @@ void DayFive_2(vector<vector<string>> rows);
 
 void DaySix(vector<string> rows);
 
+void DaySeven(vector<string> rows);
+
 int main() {
 //    vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
     vector<string> rows = FileReader::ReadFileRows(filePath);
 //    vector<vector<string>> columns = FileReader::ReadFileColumns(filePath);
 //    vector<vector<string>> cutRows = FileReader::CutRowsByKey(rows, "");
 
-    DaySix(rows);
+    DaySeven(rows);
 }
+
+int CardStringToInt(const string& card)
+{
+    vector<string> faceCards = {"A", "J", "Q", "K", "T"};
+    vector<int> faceCardNums = {14, 11, 12, 13, 10};
+    for (int i = 0; i < faceCards.size(); ++i) {
+        if(card == faceCards[i])
+        {
+            return faceCardNums[i];
+        }
+    }
+    return stoi(card);
+}
+void DaySeven(vector<string> rows){
+
+    struct Row{
+        // Overload the '==' operator
+        bool operator==(const Row& other) const {
+            return this->cardHand == other.cardHand;
+        }
+        string cardHand;
+        int number;
+    };
+
+    enum HandType{
+        FiveK = 0,
+        FourK = 1,
+        FH = 2,
+        ThreeK = 3,
+        TP = 4,
+        OP = 5,
+        HC = 6,
+        NA = 100
+    };
+    vector<Row> cardHands;
+    vector<HandType> handType;
+    for (int i = 0; i < rows.size(); ++i) {
+        PQueue<string> hand;
+
+        Row currentRow;
+        currentRow.number = stoi(FileReader::SplitBySpace(rows[i])[1]);
+        currentRow.cardHand = FileReader::SplitBySpace(rows[i])[0];
+        cardHands.push_back(currentRow);
+
+        vector<string> characterSplit = FileReader::SplitByCharacter(FileReader::SplitBySpace(rows[i])[0]);
+        for (int j = 0; j < characterSplit.size(); ++j) {
+            hand.Add(characterSplit[j], CardStringToInt(characterSplit[j]), true);
+        }
+
+        int seenBeforeSize, amountOfDuplication;
+        hand.GetProperties(seenBeforeSize, amountOfDuplication);
+
+        if(amountOfDuplication == 5 && seenBeforeSize == 1) handType.push_back(FiveK);
+        else if(amountOfDuplication == 4 && seenBeforeSize == 2) handType.push_back(FourK);
+        else if(amountOfDuplication == 5 && seenBeforeSize == 2) handType.push_back(FH);
+        else if(amountOfDuplication == 3) handType.push_back(ThreeK);
+        else if(amountOfDuplication == 4 && seenBeforeSize == 3) handType.push_back(TP);
+        else if(amountOfDuplication == 2) handType.push_back(OP);
+        else if(amountOfDuplication == 0) handType.push_back(HC);
+        else handType.push_back(NA);
+    }
+
+    vector<PQueue<string>> groups;
+
+    //sort the cards
+    PQueue<Row> categories;
+    for (int i = 0; i < cardHands.size(); ++i) {
+        HandType type = handType[i];
+        int typeInt = static_cast<int>(type);
+        categories.AddMax(cardHands[i], typeInt);
+    }
+
+//    categories.Print();
+
+    constexpr std::array<HandType, 8> allHandTypes = {
+            FiveK, FourK, FH, ThreeK, TP, OP, HC, NA
+    };
+
+    //create groups of cards by priority
+    PQueue<PQueue<Row>> group;
+    for (int i = 0; i < 8; ++i) {
+        PQueue<Row> same;
+        for (int j = 0; j < categories.size(); ++j) {
+            if (categories.getPriority(j) == allHandTypes[i]) {
+
+                string current = categories.get(j).cardHand;
+                int cardValue = CardStringToInt(string(1, categories.get(j).cardHand[0]));
+                if (same.size() != 0) {
+                    for (int k = 1; k < categories.get(j).cardHand.length(); ++k) {
+                        cardValue = CardStringToInt(string(1, categories.get(j).cardHand[k]));
+                        if (!same.ContainsPriority(cardValue)) break;
+                    }
+                }
+                same.AddMax(categories.get(j), cardValue);
+            }
+
+            if(same.size() != 0) {
+                Row firstElement = same.get(0);
+                same.RemoveIndex(0);
+                for (int k = 0; k < same.size(); ++k) {
+                    int cardValue = CardStringToInt(string(1, firstElement.cardHand[k]));
+                    if (!same.ContainsPriority(cardValue)) break;
+                }
+            }
+        }
+
+        cout << same.size() << endl;
+
+        if (same.size() != 0) group.AddMin(same, i);
+        if (same.size() != 0)
+        {
+            cout << "------Printing PQueue------" << endl;
+            for (int h = 0; h < same.size(); ++h) {
+                cout << "Priority " << same.getPriority(h) << ": " << same.get(h).cardHand << endl;
+            }
+        }
+    }
+
+    vector<Row> finalList;
+    for (int i = 0; i < group.size(); ++i) {
+        for (int j = 0; j < group.get(i).size(); ++j) {
+            finalList.push_back(group.get(i).get(j));
+        }
+    }
+
+    int total = 0;
+    for (int i = 0; i < finalList.size(); ++i) {
+        total += finalList[i].number * (finalList.size() - i);
+    }
+    cout << "Total: " << total << endl;
+}
+
 
 void DaySix(vector<string> rows){
     string timesS = FileReader::ReplaceAll(FileReader::SplitByKey(rows[0], ":"), " ", "")[1];
