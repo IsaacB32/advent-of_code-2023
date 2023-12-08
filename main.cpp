@@ -20,6 +20,7 @@ void DaySix(vector<string> rows);
 void DaySeven(vector<string> rows);
 
 void DayEight(vector<string> rows);
+void DayEight_2(vector<string> rows);
 
 int main() {
 //    vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
@@ -27,7 +28,7 @@ int main() {
 //    vector<vector<string>> columns = FileReader::ReadFileColumns(filePath);
 //    vector<vector<string>> cutRows = FileReader::CutRowsByKey(rows, "");
 
-    DayEight(rows);
+    DayEight_2(rows);
 }
 
 string CutOrder(string order, char isLeft){
@@ -37,6 +38,90 @@ string CutOrder(string order, char isLeft){
     else split = split.substr(0, split.length()-1);
     return split;
 }
+
+bool isKeysEnded(vector<string> keys){
+    int count = 0;
+    for (int i = 0; i < keys.size(); ++i) {
+        if(keys[i][2] == 'Z') count++;
+        if(count == keys.size()) return true;
+    }
+    return false;
+}
+
+bool isKeysEndedSingle(vector<string> keys){
+    for (int i = 0; i < keys.size(); ++i) {
+        if(keys[i][2] == 'Z') return true;
+    }
+    return false;
+}
+
+void DayEight_2(vector<string> rows){
+    vector<string> instructions = FileReader::SplitByCharacter(rows[0]);
+
+    //<key, value>
+    unordered_map<string, string> map;
+    for (int i = 2; i < rows.size(); ++i) {
+        string key = (FileReader::SplitByKey(rows[i],"=")[0]).substr(0, 3);
+        string order = FileReader::ReplaceLine(FileReader::SplitByKey(rows[i],"=")[1], ",", "").substr(1);
+        map[key] = order;
+    }
+
+    vector<string> startingKeys;
+    for (int i = 2; i < rows.size(); ++i) {
+        string key = FileReader::SplitByKey(rows[i],"=")[0].substr(0, 3);
+        if(key[2] == 'A') startingKeys.push_back(key);
+    }
+
+//    FileReader::PrintVector(startingKeys);
+
+    string loopCheck[startingKeys.size()];
+    long long stepCounter = 0;
+    string loopCheckString;
+    while(!isKeysEnded(startingKeys)) //&& loop Check >= 0
+    {
+        for (int i = 0; i < startingKeys.size(); ++i) {
+            if(loopCheck[i] == "Done") continue;
+
+            string order = map[startingKeys[i]];
+            char direction = instructions[stepCounter % instructions.size()][0];
+            startingKeys[i] = CutOrder(order, direction);
+
+            if(startingKeys[i][2] == 'Z')
+            {
+//                cout << "Ending Z (" << i << "): " << startingKeys[i] << endl;
+//                cout << "Loop Check: " << loopCheck[i] << endl;
+                if(loopCheck[i] == startingKeys[i])
+                {
+                    //must be looping somewhere
+                    loopCheck[i] = "Done";
+                }
+                else loopCheck[i] = startingKeys[i];
+//                cout << "--||--" << endl;
+            }
+        }
+        stepCounter++;
+    }
+    cout << "Total Steps: " << stepCounter << endl;
+
+    //put this inside another loop to count the number of times each loop is (probably can fit it
+    // inside of the first loop in place of the loop check
+    int sCount = 0;
+    string k = startingKeys[0];
+    do
+    {
+//        cout << "k: " << k << endl;
+        string order = map[k];
+        char direction = instructions[sCount % instructions.size()][0];
+        k = CutOrder(order, direction);
+        sCount++;
+    } while(k != startingKeys[0]);
+    cout << "sCount: " << sCount << endl;
+
+    for (int i = 0; i < startingKeys.size(); ++i) {
+        cout << "Key: " << startingKeys[i] << endl;
+    }
+
+} //37922 to low
 void DayEight(vector<string> rows){
     vector<string> instructions = FileReader::SplitByCharacter(rows[0]);
 
@@ -50,7 +135,6 @@ void DayEight(vector<string> rows){
 
 
     int A_Index = 0;
-    vector<string> debugKeys;
     for (int i = 2; i < rows.size(); ++i) {
         string key = FileReader::SplitByKey(rows[i],"=")[0].substr(0, 3);
         if(key == "AAA")
@@ -58,14 +142,7 @@ void DayEight(vector<string> rows){
             A_Index = i;
             break;
         }
-        //debugKeys.push_back((FileReader::SplitByKey(rows[i],"=")[0]).substr(0, 3));
     }
-//
-//    for (int i = 0; i < debugKeys.size(); ++i) {
-//        string order = map[debugKeys[i]];
-//        cout << "key: " << debugKeys[i] <<  " | order: " << order << endl;
-//        cout << "------" << endl;
-//    }
 
     //int loopCheck = 66600000;
     long long stepCounter = 0;
@@ -73,15 +150,13 @@ void DayEight(vector<string> rows){
     string key = (FileReader::SplitByKey(rows[A_Index],"=")[0]).substr(0, 3);
     while(key != "ZZZ" ) //&& loopCheck >= 0
     {
-//        loopCheck-=1;
         string order = map[key];
         char direction = instructions[stepCounter % instructions.size()][0];
         key = CutOrder(order, direction);
-//        cout << "direcetion: " << direction << endl;
         stepCounter++;
     }
     cout << "Total Steps: " << stepCounter << endl;
-} //not: 666
+}
 
 int CardStringToInt(const string& card)
 {
