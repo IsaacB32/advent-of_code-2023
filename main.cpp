@@ -22,7 +22,6 @@ void DayFive_2(vector<vector<string>> rows);
 void DaySix(vector<string> rows);
 
 void DaySeven(vector<string> rows);
->>>>>>> day7
 
 int main() {
 //    vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
@@ -30,9 +29,6 @@ int main() {
 //    vector<vector<string>> columns = FileReader::ReadFileColumns(filePath);
 //    vector<vector<string>> cutRows = FileReader::CutRowsByKey(rows, "");
 
-<<<<<<< HEAD
-
-=======
     DaySeven(rows);
 }
 
