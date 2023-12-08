@@ -15,13 +15,14 @@ void DayFour_2(vector<string> rows);
 void DayFive(vector<vector<string>> rows);
 void DayFive_2(vector<vector<string>> rows);
 
+
+
 int main() {
 //    vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
     vector<string> rows = FileReader::ReadFileRows(filePath);
 //    vector<vector<string>> columns = FileReader::ReadFileColumns(filePath);
 
-    vector<vector<string>> cutRows = FileReader::CutRowsByKey(rows, "");
-    DayFive_2(cutRows);
+
 }
 
 long long ProcessSeed(long long seed, vector<vector<long long*>> ranges)
