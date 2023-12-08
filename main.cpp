@@ -47,12 +47,19 @@ void DayEight(vector<string> rows){
         string order = FileReader::ReplaceLine(FileReader::SplitByKey(rows[i],"=")[1], ",", "").substr(1);
         map[key] = order;
     }
-    
 
-//    vector<string> debugKeys;
-//    for (int i = 2; i < rows.size(); ++i) {
-//        debugKeys.push_back((FileReader::SplitByKey(rows[i],"=")[0]).substr(0, 3));
-//    }
+
+    int A_Index = 0;
+    vector<string> debugKeys;
+    for (int i = 2; i < rows.size(); ++i) {
+        string key = FileReader::SplitByKey(rows[i],"=")[0].substr(0, 3);
+        if(key == "AAA")
+        {
+            A_Index = i;
+            break;
+        }
+        //debugKeys.push_back((FileReader::SplitByKey(rows[i],"=")[0]).substr(0, 3));
+    }
 //
 //    for (int i = 0; i < debugKeys.size(); ++i) {
 //        string order = map[debugKeys[i]];
@@ -60,20 +67,20 @@ void DayEight(vector<string> rows){
 //        cout << "------" << endl;
 //    }
 
-//    //int loopCheck = 66600000;
-//    long long stepCounter = 0;
-//    string loopCheckString;
-//    string key = (FileReader::SplitByKey(rows[2],"=")[0]).substr(0, 3);
-//    while(key != "ZZZ" ) //&& loopCheck >= 0
-//    {
-////        loopCheck-=1;
-//        string order = map[key];
-//        char direction = instructions[stepCounter % instructions.size()][0];
-//        key = CutOrder(order, direction);
-////        cout << "direcetion: " << direction << endl;
-//        stepCounter++;
-//    }
-//    cout << "Total Steps: " << stepCounter << endl;
+    //int loopCheck = 66600000;
+    long long stepCounter = 0;
+    string loopCheckString;
+    string key = (FileReader::SplitByKey(rows[A_Index],"=")[0]).substr(0, 3);
+    while(key != "ZZZ" ) //&& loopCheck >= 0
+    {
+//        loopCheck-=1;
+        string order = map[key];
+        char direction = instructions[stepCounter % instructions.size()][0];
+        key = CutOrder(order, direction);
+//        cout << "direcetion: " << direction << endl;
+        stepCounter++;
+    }
+    cout << "Total Steps: " << stepCounter << endl;
 } //not: 666
 
 int CardStringToInt(const string& card)
