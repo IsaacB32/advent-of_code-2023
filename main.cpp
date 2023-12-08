@@ -2,6 +2,7 @@
 #include "FileReader.h"
 #include "PQueue.h"
 #include "algorithm"
+#include <unordered_map>
 
 static string filePath = R"(C:\The Main File ---------\Other Stuff\Code\AdventOfCode2023\Input.txt)";
 
@@ -15,13 +16,10 @@ void DayFour_2(vector<string> rows);
 
 void DayFive(vector<vector<string>> rows);
 void DayFive_2(vector<vector<string>> rows);
-
-<<<<<<< HEAD
-
-=======
 void DaySix(vector<string> rows);
-
 void DaySeven(vector<string> rows);
+
+void DayEight(vector<string> rows);
 
 int main() {
 //    vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
@@ -29,8 +27,54 @@ int main() {
 //    vector<vector<string>> columns = FileReader::ReadFileColumns(filePath);
 //    vector<vector<string>> cutRows = FileReader::CutRowsByKey(rows, "");
 
-    DaySeven(rows);
+    DayEight(rows);
 }
+
+string CutOrder(string order, char isLeft){
+    int sideIndex = (isLeft == 'L') ? 0 : 1;
+    string split = FileReader::SplitBySpace(order)[sideIndex];
+    if(sideIndex == 0) split = split.substr(1);
+    else split = split.substr(0, split.length()-1);
+    return split;
+}
+void DayEight(vector<string> rows){
+    vector<string> instructions = FileReader::SplitByCharacter(rows[0]);
+
+    //<key, value>
+    unordered_map<string, string> map;
+    for (int i = 2; i < rows.size(); ++i) {
+        string key = (FileReader::SplitByKey(rows[i],"=")[0]).substr(0, 3);
+        string order = FileReader::ReplaceLine(FileReader::SplitByKey(rows[i],"=")[1], ",", "").substr(1);
+        map[key] = order;
+    }
+    
+
+//    vector<string> debugKeys;
+//    for (int i = 2; i < rows.size(); ++i) {
+//        debugKeys.push_back((FileReader::SplitByKey(rows[i],"=")[0]).substr(0, 3));
+//    }
+//
+//    for (int i = 0; i < debugKeys.size(); ++i) {
+//        string order = map[debugKeys[i]];
+//        cout << "key: " << debugKeys[i] <<  " | order: " << order << endl;
+//        cout << "------" << endl;
+//    }
+
+//    //int loopCheck = 66600000;
+//    long long stepCounter = 0;
+//    string loopCheckString;
+//    string key = (FileReader::SplitByKey(rows[2],"=")[0]).substr(0, 3);
+//    while(key != "ZZZ" ) //&& loopCheck >= 0
+//    {
+////        loopCheck-=1;
+//        string order = map[key];
+//        char direction = instructions[stepCounter % instructions.size()][0];
+//        key = CutOrder(order, direction);
+////        cout << "direcetion: " << direction << endl;
+//        stepCounter++;
+//    }
+//    cout << "Total Steps: " << stepCounter << endl;
+} //not: 666
 
 int CardStringToInt(const string& card)
 {
@@ -77,7 +121,7 @@ void DaySeven(vector<string> rows){
 
         vector<string> characterSplit = FileReader::SplitByCharacter(FileReader::SplitBySpace(rows[i])[0]);
         for (int j = 0; j < characterSplit.size(); ++j) {
-            hand.Add(characterSplit[j], CardStringToInt(characterSplit[j]), true);
+            hand.AddDuplicates(characterSplit[j], CardStringToInt(characterSplit[j]));
         }
 
         int seenBeforeSize, amountOfDuplication;
@@ -163,7 +207,6 @@ void DaySeven(vector<string> rows){
     cout << "Total: " << total << endl;
 }
 
-
 void DaySix(vector<string> rows){
     string timesS = FileReader::ReplaceAll(FileReader::SplitByKey(rows[0], ":"), " ", "")[1];
     string distancesS = FileReader::ReplaceAll(FileReader::SplitByKey(rows[1], ":"), " ", "")[1];
@@ -180,7 +223,6 @@ void DaySix(vector<string> rows){
         if(j * (times - j) > distances) timeWin++;
     }
     cout << "Total: " << timeWin << endl; //29891250
->>>>>>> day7
 }
 
 long long ProcessSeed(long long seed, vector<vector<long long*>> ranges)

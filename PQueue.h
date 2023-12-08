@@ -8,7 +8,7 @@ class PQueue{
 public:
     void AddMax(T item, int priority);
     void AddMin(T item, int priority);
-    void Add(T item, int priority, bool trackSeenBefore);
+    void AddDuplicates(T item, int priority);
 
     void Remove(T item);
     void RemoveIndex(int index);
@@ -74,13 +74,12 @@ void PQueue<T>::AddMin(T item, int priority) {
 }
 
 template <typename T>
-void PQueue<T>::Add(T item, int priority, bool trackSeenBefore){
+void PQueue<T>::AddDuplicates(T item, int priority){
     TypePriority p;
     p.item = item;
     p.priority = priority;
 
-    if(trackSeenBefore)
-        if(!FileReader::Contains(seenBefore, p.item)) seenBefore.push_back(p.item);
+    if(!FileReader::Contains(seenBefore, p.item)) seenBefore.push_back(p.item);
 
 
     for (int i = 0; i < queue.size(); ++i) {
