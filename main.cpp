@@ -3,6 +3,7 @@
 #include "PQueue.h"
 #include "algorithm"
 #include <unordered_map>
+#include <math.h>
 
 static string filePath = R"(C:\The Main File ---------\Other Stuff\Code\AdventOfCode2023\Input.txt)";
 
@@ -31,6 +32,7 @@ int main() {
     DayEight_2(rows);
 }
 
+//Reddit and ChatGPT assisted answer (find_lcm and prime_factorization methods ChatGPT, LCM logic Reddit)
 string CutOrder(string order, char isLeft){
     int sideIndex = (isLeft == 'L') ? 0 : 1;
     string split = FileReader::SplitBySpace(order)[sideIndex];
@@ -38,7 +40,6 @@ string CutOrder(string order, char isLeft){
     else split = split.substr(0, split.length()-1);
     return split;
 }
-
 bool isKeysEnded(vector<string> keys){
     int count = 0;
     for (int i = 0; i < keys.size(); ++i) {
@@ -47,14 +48,48 @@ bool isKeysEnded(vector<string> keys){
     }
     return false;
 }
-
-bool isKeysEndedSingle(vector<string> keys){
-    for (int i = 0; i < keys.size(); ++i) {
-        if(keys[i][2] == 'Z') return true;
+std::vector<std::pair<long long, long long>> prime_factorization(long long n) {
+    std::vector<std::pair<long long, long long>> factors;
+    for (int i = 2; i <= n; ++i) {
+        long long power = 0;
+        while (n % i == 0) {
+            ++power;
+            n /= i;
+        }
+        if (power > 0) {
+            factors.emplace_back(i, power);
+        }
     }
-    return false;
+    return factors;
 }
+long long find_lcm(const vector<long long>& numbers) {
+    vector<std::pair<long long, long long>> lcm_factors;
 
+    for (int num : numbers) {
+        auto factors = prime_factorization(num);
+        for (const auto& factor : factors) {
+            auto it = std::find_if(lcm_factors.begin(), lcm_factors.end(),
+                                   [&](const std::pair<long long, long long>& p) {
+                                       return p.first == factor.first;
+                                   });
+
+            if (it == lcm_factors.end() || factor.second > it->second) {
+                if (it != lcm_factors.end()) {
+                    it->second = factor.second;
+                } else {
+                    lcm_factors.emplace_back(factor);
+                }
+            }
+        }
+    }
+
+    long long lcm = 1;
+    for (const auto& factor : lcm_factors) {
+        lcm *= static_cast<long long>(std::pow(factor.first, factor.second));
+    }
+
+    return lcm;
+}
 void DayEight_2(vector<string> rows){
     vector<string> instructions = FileReader::SplitByCharacter(rows[0]);
 
@@ -72,7 +107,8 @@ void DayEight_2(vector<string> rows){
         if(key[2] == 'A') startingKeys.push_back(key);
     }
 
-//    FileReader::PrintVector(startingKeys);
+    int loopCounts[startingKeys.size()];
+    fill(loopCounts, loopCounts + startingKeys.size(), 0);
 
     string loopCheck[startingKeys.size()];
     long long stepCounter = 0;
@@ -81,6 +117,7 @@ void DayEight_2(vector<string> rows){
     {
         for (int i = 0; i < startingKeys.size(); ++i) {
             if(loopCheck[i] == "Done") continue;
+            else loopCounts[i]++;
 
             string order = map[startingKeys[i]];
             char direction = instructions[stepCounter % instructions.size()][0];
@@ -88,39 +125,29 @@ void DayEight_2(vector<string> rows){
 
             if(startingKeys[i][2] == 'Z')
             {
-//                cout << "Ending Z (" << i << "): " << startingKeys[i] << endl;
-//                cout << "Loop Check: " << loopCheck[i] << endl;
                 if(loopCheck[i] == startingKeys[i])
                 {
                     //must be looping somewhere
                     loopCheck[i] = "Done";
+
                 }
                 else loopCheck[i] = startingKeys[i];
-//                cout << "--||--" << endl;
             }
         }
         stepCounter++;
     }
     cout << "Total Steps: " << stepCounter << endl;
 
-    //put this inside another loop to count the number of times each loop is (probably can fit it
-    // inside of the first loop in place of the loop check
-    int sCount = 0;
-    string k = startingKeys[0];
-    do
-    {
-//        cout << "k: " << k << endl;
-        string order = map[k];
-        char direction = instructions[sCount % instructions.size()][0];
-        k = CutOrder(order, direction);
-        sCount++;
-    } while(k != startingKeys[0]);
-    cout << "sCount: " << sCount << endl;
-
+    vector<long long> counts;
     for (int i = 0; i < startingKeys.size(); ++i) {
-        cout << "Key: " << startingKeys[i] << endl;
+        counts.push_back(loopCounts[i] / 2);
     }
-
+    long long total = find_lcm(counts);
+//
+//    for (int i = 0; i < startingKeys.size(); ++i) {
+//        cout << "Key: " << startingKeys[i] << endl;
+//    }
+    cout << "Total: " << total << endl;
 } //37922 to low
 void DayEight(vector<string> rows){
     vector<string> instructions = FileReader::SplitByCharacter(rows[0]);
