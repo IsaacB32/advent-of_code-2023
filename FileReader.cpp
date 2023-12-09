@@ -209,6 +209,14 @@ int FileReader::GetSizeOfLineWithoutKey(const string& line, string key) {
     return totalCount;
 }
 
+int FileReader::SumVector(vector<int> values) {
+    int size = 0;
+    for (int i = 0; i < values.size(); ++i) {
+        size += values[i];
+    }
+    return size;
+}
+
 //uses additional character '⁂' to compensate for the split method not accounting for the very last character
 bool FileReader::Contains(const string &line, const string &key) {
     vector<string> split = FileReader::SplitByKey(line + "⁂", key);

@@ -43,6 +43,8 @@ public:
     static int GetLineCount(const string& filePath);
     static int GetSizeOfLineWithoutKey(const string& line, string key);
 
+    static int SumVector(vector<int> values);
+
     //(line, key)
     static bool Contains(const string& line, const string& key);
     //(line, values, containsAll)
