@@ -28,6 +28,15 @@ public:
     static inline vector<string>SplitByDoubleSpace(const string& line){return SplitByKey(line, "  ");}
     static inline vector<string>SplitByPeriod(const string& line){return SplitByKey(line, ".");}
 
+    static inline vector<string> RemoveEmpty(const vector<string>& lines)
+    {
+        vector<string> d;
+        for (int i = 0; i < lines.size(); ++i) {
+            if(!lines[i].empty()) d.push_back(lines[i]);
+        }
+        return d;
+    };
+
     static string ReplaceLine(string& line, const string& key, const string& toReplace);
     static void ReplaceAllAbsolute(vector<string>& file, const string& key, const string& toReplace);
     static vector<string> ReplaceAll(vector<string> file, const string& key, const string& toReplace);
@@ -38,6 +47,7 @@ public:
 
     static bool Contains(const string& line, const string& key);
     static bool Contains(const string& line, const vector<string>& values, bool containsAll);
+    static bool Contains(const vector<string>& lines, const string& key);
 
     static vector<int> StringToInt(vector<string> values);
 
@@ -56,6 +66,7 @@ public:
         return GetNeighbor(std::move(grid), keys, rowIndex, columnIndex, range);
     };
     static vector<int> GetNeighbor(vector<vector<string>> grid, const vector<string>& keys, int rowIndex, int columnIndex, int range);
+    static vector<pair<int,int>> GetNeighborIndex(vector<vector<string>> grid, const vector<string>& keys, int rowIndex, int columnIndex);
 
     static void PrintVector(const vector<string>& v, const string& title);
     static void PrintVector(const vector<int>& v, const string& title);

@@ -166,6 +166,15 @@ bool FileReader::Contains(const string &line, const vector<string>& values, bool
     return (containsCount == values.size());
 }
 
+bool FileReader::Contains(const vector<string> &lines, const string& key) {
+    for (int i = 0; i < lines.size(); ++i) {
+        if(lines[i] == key) return true;
+    }
+    return false;
+}
+
+
+
 vector<int> FileReader::StringToInt(vector<string> values) {
     vector<int> integer;
     for (int i = 0; i < values.size(); ++i) {
@@ -182,24 +191,24 @@ bool FileReader::CheckForNeighbor(vector<vector<string>> grid, const vector<stri
 //checks for count existing neighbors seperated by filler spaces
 bool FileReader::CheckForNeighborCount(vector<vector<string>> grid, const vector<string>& keys, int rowIndex, int columnIndex, int range, int count) {
     bool lookedAtNumber = false;
-    bool hasOneNumber = false;
+    int numNeighbors = 0;
     for (int i = rowIndex-range; i < rowIndex+range+1; ++i) { //row
         if(i < 0 || i >= grid.size()) continue;
         for (int j = columnIndex-range; j < columnIndex+range+1; ++j) { //column
             if(j < 0 || j >= grid[i].size()) continue;
+            if(i == rowIndex && j == columnIndex) continue;
             string neighbor = grid[i][j];
-            if(FileReader::Contains(neighbor, keys, false)){
-                if(lookedAtNumber && hasOneNumber) return true;
+            if(FileReader::Contains(neighbor, keys, false) && !lookedAtNumber){
                 lookedAtNumber = true;
+                numNeighbors++;
             }
             else if(lookedAtNumber)
             {
-                //looking at a number and then looked at dots
-                hasOneNumber = true;
+                lookedAtNumber = false;
             }
         }
     }
-    return false;
+    return (numNeighbors) == count;
 }
 
 //returns the first instance of a key or list of keys
@@ -217,6 +226,22 @@ vector<int> FileReader::GetNeighbor(vector<vector<string>> grid, const vector<st
     }
     vector<int> position = {-1};
     return position;
+}
+
+vector<pair<int,int>> FileReader::GetNeighborIndex(vector<vector<string>> grid, const vector<string>& keys, int rowIndex, int columnIndex){
+    vector<pair<int,int>> positions;
+    for (int i = rowIndex-1; i < rowIndex+1+1; ++i) { //row
+        if(i < 0 || i >= grid.size()) continue;
+        for (int j = columnIndex-1; j < columnIndex+1+1; ++j) { //column
+            if(j < 0 || j >= grid[i].size()) continue;
+            string neighbor = grid[i][j];
+            if(FileReader::Contains(neighbor, keys, false)){
+                pair<int,int> position = {i, j};
+                positions.push_back(position);
+            }
+        }
+    }
+    return positions;
 }
 
 void FileReader::PrintVector(const vector<string>& v, const string& title) {
