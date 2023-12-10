@@ -32,3 +32,6 @@
 *.app
 
 Input.txt
+cmake-build-debug/*
+CMakeLists.txt
+.idea/*
