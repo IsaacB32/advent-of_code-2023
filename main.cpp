@@ -24,6 +24,7 @@ void DayEight(vector<string> rows);
 void DayEight_2(vector<string> rows);
 
 void DayNine(vector<string> rows);
+void DayNine_2(vector<string> rows);
 
 int main() {
 //    vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
@@ -31,7 +32,7 @@ int main() {
 //    vector<vector<string>> columns = FileReader::ReadFileColumns(filePath);
 //    vector<vector<string>> cutRows = FileReader::CutRowsByKey(rows, "");
 
-    DayNine(rows);
+    DayNine_2(rows);
 }
 
 bool allConstant(vector<int> row, int& adder){
@@ -49,6 +50,33 @@ vector<int> findDifferences(vector<int> row){
         diffList.push_back(diff);
     }
     return diffList;
+}
+void DayNine_2(vector<string> row){
+    vector<vector<int>> numbers;
+    vector<int> nextValues;
+    for (int i = 0; i < row.size(); ++i) {
+        numbers.push_back(FileReader::StringToInt(FileReader::SplitBySpace(row[i])));
+    }
+
+    for (int i = 0; i < numbers.size(); ++i) {
+        vector<int> currentRow = numbers[i];
+        int nextValue = 0;
+        vector<int> firstValues;
+        firstValues.push_back(currentRow.front());
+        while(!allConstant(currentRow, nextValue)){
+            currentRow = findDifferences(currentRow);
+            firstValues.push_back(currentRow.front());
+        }
+
+        int value = currentRow[0];
+        for (int j = firstValues.size()-2; j >= 0; --j) {
+            value = firstValues[j] - value;
+        }
+        nextValues.push_back(value);
+    }
+
+    int total = FileReader::SumVector(nextValues);
+    cout << "Total: " << total << endl;
 }
 void DayNine(vector<string> row) {
     vector<vector<int>> numbers;
