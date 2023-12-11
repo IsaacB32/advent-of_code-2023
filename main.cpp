@@ -28,20 +28,55 @@ void DayNine_2(vector<string> rows);
 
 void DayTen(vector<vector<string>> rows2D);
 
+void DayEleven(vector<vector<string>> rows2D, vector<vector<string>> columns);
+
 int main() {
     vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
-    vector<string> rows = FileReader::ReadFileRows(filePath);
-//    vector<vector<string>> columns = FileReader::ReadFileColumns(filePath);
+//    vector<string> rows = FileReader::ReadFileRows(filePath);
+    vector<vector<string>> columns = FileReader::ReadFileColumns(filePath);
 //    vector<vector<string>> cutRows = FileReader::CutRowsByKey(rows, "");
 
-//    pair<int, int> startingIndex = {2,2};
-//    vector<pair<int,int>> coords = {{-1,0},{0,-1},{1,0},{0,1}};
-//    for (int i = 0; i < coords.size(); ++i) {
-//        int x = startingIndex.first + coords[i].first;
-//        int y = startingIndex.second + coords[i].second;
-//        cout << rows2D[y][x] << endl;
-//    }
-    DayTen(rows2D);
+
+    DayEleven(rows2D, columns);
+}
+
+long long findDistance(pair<long long,long long> a, pair<long long,long long> b){
+    long long distance = abs(a.first - b.first) + abs(a.second - b.second);
+    return distance;
+}
+void DayEleven(vector<vector<string>> rows2D, vector<vector<string>> columns){
+    vector<pair<long long,long long>> positions;
+    string galexyString = "#";
+    long long xIndex =0,yIndex=0;
+    for (int i = 0; i < rows2D.size(); ++i) {
+        if(!FileReader::Contains(rows2D[i], galexyString)){
+            xIndex+=1000000;
+        }
+        else xIndex++;
+        yIndex = 0;
+        for (int j = 0; j < rows2D[i].size(); ++j) {
+            if(!FileReader::Contains(columns[j], galexyString)){
+                yIndex+=1000000;
+            }
+            else yIndex++;
+            if(rows2D[i][j] == "#") positions.emplace_back(yIndex,xIndex);
+        }
+    }
+
+    long long totalDistances = 0;
+    vector<pair<long long,long long>> compared;
+    for (long long i = 0; i < positions.size(); ++i) {
+        for (long long j = 0; j < positions.size(); ++j) {
+            if (FileReader::Contains(compared, {i, j})) continue;
+            if (j == i) continue;
+
+            compared.emplace_back(j, i);
+            long long distance = findDistance(positions[i], positions[j]);
+            totalDistances += distance;
+        }
+    }
+    cout << "Total Distance: " << totalDistances << endl;
+
 }
 
 vector<vector<string>> FindPipe(const string& pipe) {
