@@ -26,13 +26,133 @@ void DayEight_2(vector<string> rows);
 void DayNine(vector<string> rows);
 void DayNine_2(vector<string> rows);
 
+void DayTen(vector<vector<string>> rows2D);
+
 int main() {
-//    vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
+    vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
     vector<string> rows = FileReader::ReadFileRows(filePath);
 //    vector<vector<string>> columns = FileReader::ReadFileColumns(filePath);
 //    vector<vector<string>> cutRows = FileReader::CutRowsByKey(rows, "");
 
-    DayNine_2(rows);
+//    pair<int, int> startingIndex = {2,2};
+//    vector<pair<int,int>> coords = {{-1,0},{0,-1},{1,0},{0,1}};
+//    for (int i = 0; i < coords.size(); ++i) {
+//        int x = startingIndex.first + coords[i].first;
+//        int y = startingIndex.second + coords[i].second;
+//        cout << rows2D[y][x] << endl;
+//    }
+    DayTen(rows2D);
+}
+
+vector<vector<string>> FindPipe(const string& pipe) {
+    vector<vector<string>> possiblePipeValues;
+    if (pipe == "F") {
+        possiblePipeValues = {{"-","7","J"},{"|","L","J"}};
+    } else if (pipe == "L") {
+        possiblePipeValues = {{"|","F","7"},{"7","J","-"}};
+    } else if (pipe == "7") {
+        possiblePipeValues = {{"-","F","L"},{"|","L","J"}};
+    } else if (pipe == "J") {
+        possiblePipeValues = {{"-","F","L"},{"|","F","7"}};
+    } else if (pipe == "|") {
+        possiblePipeValues = {{"|","F","7"}, {"|","L","J"}};
+    } else if (pipe == "-") {
+        possiblePipeValues = {{"-","F","L"}, {"7","J","-"}};
+    } else if (pipe == ".") {
+        possiblePipeValues = {};
+    } else if (pipe == "S"){
+        possiblePipeValues = {{"F","L","-"},{"F","7","|"},{"J","7","-"},{"L","J","|"}};
+    }
+    return possiblePipeValues;
+}
+vector<pair<int,int>> FindCoords(const string& pipe){
+    vector<pair < int, int>> possibleCoords;
+    if(pipe == "F"){
+        possibleCoords = {{1,0},{0,1}};
+    }
+    else if(pipe == "L"){
+        possibleCoords = {{0,-1},{1,0}};
+    }
+    else if(pipe == "7"){
+        possibleCoords = {{-1,0},{0,1}};
+    }
+    else if(pipe == "J"){
+        possibleCoords = {{-1,0},{0,-1}};
+    }
+    else if(pipe == "|"){
+        possibleCoords = {{0,-1},{0,1}};
+    }
+    else if(pipe == "-"){
+        possibleCoords = {{-1,0},{1,0}};
+    }
+    else if(pipe == "."){
+        possibleCoords = {};
+    }
+    else if(pipe == "S"){
+        possibleCoords = {{-1,0},{0,-1},{1,0},{0,1}};
+    }
+    return possibleCoords;
+}
+void DayTen(vector<vector<string>> row2D){
+    pair<int,int> startIndex;
+    string startString = "S";
+    for (int i = 0; i < row2D.size(); ++i) {
+        if(!FileReader::Contains(row2D[i], startString)) continue;
+        for (int j = 0; j < row2D[i].size(); ++j) {
+            if(row2D[i][j] == "S") {
+                startIndex.first = j;
+                startIndex.second = i;
+                break;
+            }
+        }
+        break;
+    }
+
+    vector<pair<int,int>> path;
+    //left = [x-1][y]
+    //right = [x+1][y]
+    //up =   [x][y+1]
+    //down = [x][y-1]
+
+    //F = look down , look right
+    //L = look up, look right
+    //J = look up, look left
+    //7 = look down, look left
+    //- = look left, look right
+    //| = look up, look down
+    pair<int,int> prevIndex = {-1,-1};
+    cout << "starting index: " << startIndex.first << ", " << startIndex.second << endl;
+    pair<int,int> currentIndex = startIndex;
+    string currentPipe = "S";
+    do {
+        vector<vector<string>> possiblePipes = FindPipe(currentPipe);
+        vector<pair<int,int>> coords = FindCoords(currentPipe);
+        for (int i = 0; i < possiblePipes.size(); ++i) {
+            pair<int,int> point = {currentIndex.first + coords[i].first, currentIndex.second + coords[i].second};
+            if((point.first < 0 || point.second < 0) || point == prevIndex) continue;
+
+            string current = row2D[point.second][point.first];
+//            FileReader::PrintVector(possiblePipes[i]);
+//            cout << "point: " << point.first << ", " << point.second << endl;
+//            cout << "current: " << current << endl;
+            if(FileReader::Contains(possiblePipes[i], current))
+            {
+                prevIndex = currentIndex;
+
+                currentPipe = current;
+                currentIndex = point;
+
+                path.push_back(currentIndex);
+                break;
+            }
+            else if(current == "S") currentPipe = "S";
+        }
+    } while(currentPipe != "S");
+
+    int total = path.size();
+    if(path.size() % 2 != 0) total = (total / 2) + 1;
+    else total = total / 2;
+    cout << "Total: " << total << endl;
 }
 
 bool allConstant(vector<int> row, int& adder){
