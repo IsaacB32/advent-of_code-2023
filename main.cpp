@@ -29,9 +29,18 @@ int main() {
     DaySeven(rows);
 }
 
-int CardStringToInt(const string& card)
+struct Row{
+    // Overload the '==' operator
+    bool operator==(const Row& other) const {
+        return this->cardHand == other.cardHand;
+    }
+    string cardHand;
+    int number;
+};
+
+int CardStringToInt(const char& card)
 {
-    vector<string> faceCards = {"A", "J", "Q", "K", "T"};
+    vector<char> faceCards = {'A', 'J', 'Q', 'K', 'T'};
     vector<int> faceCardNums = {14, 11, 12, 13, 10};
     for (int i = 0; i < faceCards.size(); ++i) {
         if(card == faceCards[i])
@@ -39,19 +48,81 @@ int CardStringToInt(const string& card)
             return faceCardNums[i];
         }
     }
-    return stoi(card);
+    return stoi(string(1,card));
+}
+void CompareStrings(string a, int& aSize, string b, int& bSize){
+    if(a.length() != b.length()) return;
+
+    for (int i = 0; i < a.length(); ++i) {
+        int cardSizeA = CardStringToInt(a[i]);
+        int cardSizeB = CardStringToInt(b[i]);
+        aSize += cardSizeA;
+        bSize += cardSizeB;
+        if(a[i] != b[i]) return;
+    }
+    //cards identical
+}
+PQueue<Row> InsertCard(Row a, PQueue<Row> list) {
+    if (list.size() == 0) {
+        list.AddMax(a, CardStringToInt(a.cardHand[0]));
+        return list;
+    }
+
+    PQueue<Row> newList;
+    int size = list.size();
+    int highestSize = 0;
+    for (int i = 0; i < size; ++i) {
+        Row current = list.get(i);
+        int prevCurrentSize = list.getPriority(i);
+        int currentSize = 0;
+        int aSize = 0;
+        CompareStrings(a.cardHand, aSize, current.cardHand, currentSize);
+        newList.AddMax(current, min(currentSize, prevCurrentSize));
+
+        if(aSize > highestSize) highestSize = aSize;
+    }
+    newList.AddMax(a, highestSize);
+    return newList;
+}
+string printingEnum(int index) {
+    switch (index) {
+        case 0:
+            return "FiveK";
+        case 1:
+            return "Four Kind";
+        case 2:
+            return "Full House";
+        case 3:
+            return "Three Kind";
+        case 4:
+            return "Two Pair";
+        case 5:
+            return "One Pair";
+        case 6:
+            return "High Card";
+        default:
+            return "NA";
+    }
+}
+unordered_map<int,PQueue<Row>> SortByIndex(unordered_map<int,PQueue<Row>> queue, int sortIndex){
+    unordered_map<int,PQueue<Row>> row;
+    vector<int> keys;
+    for (const auto& pair : queue) {
+        keys.push_back(pair.first);
+    }
+
+    for (int i = 0; i < queue.size(); ++i) {
+        string current = queue[keys[i]].get(i).cardHand;
+        int cardValue = 0;
+        for (int j = 0; j <= sortIndex; ++j) {
+            cardValue += CardStringToInt(current[j]);
+        }
+        row[cardValue].AddMax(queue[keys[i]].get(i), cardValue);
+    }
+    return row;
 }
 void DaySeven(vector<string> rows){
-
-    struct Row{
-        // Overload the '==' operator
-        bool operator==(const Row& other) const {
-            return this->cardHand == other.cardHand;
-        }
-        string cardHand;
-        int number;
-    };
-
+    
     enum HandType{
         FiveK = 0,
         FourK = 1,
@@ -74,7 +145,7 @@ void DaySeven(vector<string> rows){
 
         vector<string> characterSplit = FileReader::SplitByCharacter(FileReader::SplitBySpace(rows[i])[0]);
         for (int j = 0; j < characterSplit.size(); ++j) {
-            hand.Add(characterSplit[j], CardStringToInt(characterSplit[j]), true);
+            hand.Add(characterSplit[j], CardStringToInt(characterSplit[j][0]), true);
         }
 
         int seenBeforeSize, amountOfDuplication;
@@ -97,10 +168,8 @@ void DaySeven(vector<string> rows){
     for (int i = 0; i < cardHands.size(); ++i) {
         HandType type = handType[i];
         int typeInt = static_cast<int>(type);
-        categories.AddMax(cardHands[i], typeInt);
+        categories.AddMin(cardHands[i], typeInt);
     }
-
-//    categories.Print();
 
     constexpr std::array<HandType, 8> allHandTypes = {
             FiveK, FourK, FH, ThreeK, TP, OP, HC, NA
@@ -112,38 +181,19 @@ void DaySeven(vector<string> rows){
         PQueue<Row> same;
         for (int j = 0; j < categories.size(); ++j) {
             if (categories.getPriority(j) == allHandTypes[i]) {
-
-                string current = categories.get(j).cardHand;
-                int cardValue = CardStringToInt(string(1, categories.get(j).cardHand[0]));
-                if (same.size() != 0) {
-                    for (int k = 1; k < categories.get(j).cardHand.length(); ++k) {
-                        cardValue = CardStringToInt(string(1, categories.get(j).cardHand[k]));
-                        if (!same.ContainsPriority(cardValue)) break;
-                    }
-                }
-                same.AddMax(categories.get(j), cardValue);
-            }
-
-            if(same.size() != 0) {
-                Row firstElement = same.get(0);
-                same.RemoveIndex(0);
-                for (int k = 0; k < same.size(); ++k) {
-                    int cardValue = CardStringToInt(string(1, firstElement.cardHand[k]));
-                    if (!same.ContainsPriority(cardValue)) break;
-                }
+                Row current = categories.get(j);
+                same = InsertCard(current, same);
             }
         }
-
-        cout << same.size() << endl;
-
         if (same.size() != 0) group.AddMin(same, i);
-        if (same.size() != 0)
-        {
-            cout << "------Printing PQueue------" << endl;
-            for (int h = 0; h < same.size(); ++h) {
-                cout << "Priority " << same.getPriority(h) << ": " << same.get(h).cardHand << endl;
-            }
+    }
+
+    for (int i = 0; i < group.size(); ++i) {
+        cout << printingEnum(i) << endl;
+        for (int j = 0; j < group.get(i).size(); ++j) {
+            cout << group.get(i).getPriority(j) << ": " << group.get(i).get(j).cardHand << " (" << group.get(i).get(j).number << ")" << endl;
         }
+        cout << "-----" << endl;
     }
 
     vector<Row> finalList;
@@ -153,7 +203,7 @@ void DaySeven(vector<string> rows){
         }
     }
 
-    int total = 0;
+    long long total = 0;
     for (int i = 0; i < finalList.size(); ++i) {
         total += finalList[i].number * (finalList.size() - i);
     }

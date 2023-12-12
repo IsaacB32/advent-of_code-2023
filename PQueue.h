@@ -11,7 +11,7 @@ public:
     void Add(T item, int priority, bool trackSeenBefore);
 
     void Remove(T item);
-    void RemoveIndex(int index);
+    T RemoveIndex(int index);
     bool ContainsPriority(int priority);
     T get(int index);
     int getPriority(int index);
@@ -34,10 +34,16 @@ public:
         amountOfDuplication = amountOfDup;
     }
 
+    bool allPriorityDifferent();
+
 private:
     struct TypePriority{
         T item;
         int priority;
+
+        bool operator==(const TypePriority& other) const {
+            return this->item == other.item;
+        }
     };
     std::vector<TypePriority> queue;
     std::vector<T> seenBefore;
@@ -106,9 +112,11 @@ void PQueue<T>::Remove(T item){
 }
 
 template <typename T>
-void PQueue<T>::RemoveIndex(int index){
-    if(queue.empty()) return;
+T PQueue<T>::RemoveIndex(int index){
+//    if(queue.empty()) return nullptr;
+    T item = queue[index].item;
     queue.erase(queue.cbegin() + index);
+    return item;
 }
 
 template <typename T>
@@ -139,6 +147,18 @@ bool PQueue<T>::ContainsPriority(int priority) {
         if(queue[i].priority == priority) return true;
     }
     return false;
+}
+
+template <typename T>
+bool PQueue<T>::allPriorityDifferent() {
+    vector<TypePriority> seen;
+    for (int i = 0; i < queue.size(); ++i) {
+        for (int j = 0; j < seen.size(); ++j) {
+            if(queue[i] == seen[j]) return false;
+        }
+        seen.push_back(queue[i]);
+    }
+    return true;
 }
 
 template <typename T>
