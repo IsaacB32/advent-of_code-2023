@@ -43,6 +43,17 @@ int main() {
 }
 
 int reflectedIndex(int reflection, int i) {return (i + abs(reflection - i) * 2) - 1;}
+int checkForSingleDifference(string a, string b) {
+    int indexOfDifference = 0, diff = 0;
+    for (int i = 0; i < a.length(); ++i) {
+        if(a[i] != b[i]) {
+            diff++;
+            indexOfDifference = i;
+        }
+    }
+    if(diff == 1) return indexOfDifference;
+    return -1;
+}
 bool testReflection(vector<string> reflection){
     for (int i = 0; i < reflection.size() / 2; ++i) {
         string current = reflection[i];
@@ -51,7 +62,7 @@ bool testReflection(vector<string> reflection){
     }
     return true;
 }
-bool CheckReflection(const vector<string> &map, int& total) {
+bool CheckReflection(vector<string> map, int& total) {
     for (int i = 0; i < map.size(); ++i) {
         for (int reflectionIndex = i + 1; reflectionIndex < map.size(); ++reflectionIndex) {
             int rIndex = reflectedIndex(reflectionIndex, i);
@@ -59,19 +70,40 @@ bool CheckReflection(const vector<string> &map, int& total) {
 
             const string& current = map[i];
             const string& next = map[rIndex];
-            if (current == next) {
+            int indexOfDifference = checkForSingleDifference(current, next);
+            if(indexOfDifference != -1) //contains a single difference
+            {
+                map[i][indexOfDifference] = (map[i][indexOfDifference] == '.') ? '#' : '.';
+
                 vector<string> testingReflection;
-                for (int j = i; j < rIndex; ++j) {
+                int reflectionSpace = min(reflectionIndex, (int)map.size() - reflectionIndex);
+                int startingIndex = reflectionIndex - reflectionSpace;
+                int endingIndex = reflectionIndex + reflectionSpace;
+                for (int j = startingIndex; j < endingIndex; ++j) {
                     testingReflection.push_back(map[j]);
                 }
-                //current error: the testingReflection is not collecting enough data, it needs to go all the way to the
-                //end of either the top of the bottom (whichever is shorter distance) and compare the reflection of that
-                FileReader::PrintVector(testingReflection);
-                if (testReflection(testingReflection)) {
+
+                if(testReflection(testingReflection)){
                     total = reflectionIndex;
                     return true;
                 }
+
+                map[i][indexOfDifference] = (map[i][indexOfDifference] == '.') ? '#' : '.';
             }
+//            if (current == next) {
+//                vector<string> testingReflection;
+//                int reflectionSpace = min(reflectionIndex, (int)map.size() - reflectionIndex);
+//                int startingIndex = reflectionIndex - reflectionSpace;
+//                int endingIndex = reflectionIndex + reflectionSpace;
+//                for (int j = startingIndex; j < endingIndex; ++j) {
+//                    testingReflection.push_back(map[j]);
+//                }
+//
+//                if(testReflection(testingReflection)){
+//                    total = reflectionIndex;
+//                    return true;
+//                }
+//            }
         }
     }
     return false;
@@ -82,7 +114,7 @@ int findReflectionIndex(vector<string> rows){
     if(CheckReflection(rows, total)) return 100*total;
 
     vector<string> columns;
-    for (int i = 0; i < rows.size(); ++i) {
+    for (int i = 0; i < rows[0].size(); ++i) {
         string c;
         for (int j = 0; j < rows.size(); ++j) {
             c += rows[j][i];
@@ -100,9 +132,11 @@ void DayThirdteen(vector<string> rows){
     int total = 0;
     vector<vector<string>> map = FileReader::CutRowsByKey(rows, "");
     for (int i = 0; i < map.size(); ++i) {
-        total += findReflectionIndex(map[i]);
+        int f = findReflectionIndex(map[i]);
+        total += f;
+//        cout << "(" << i << "): " << f << endl;
     }
-    cout << total << endl;
+    cout << "Total: " << total << endl;
 }
 
 vector<int> cutVector(vector<int> v, int indexToCut){
