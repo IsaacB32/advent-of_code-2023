@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "algorithm"
 using namespace std;
 
 class FileReader{
@@ -40,10 +41,15 @@ public:
     static vector<int> StringToInt(vector<string> integerList);
     static vector<long long> StringToLong(vector<string> integerList);
 
+    static int CountUniqueOccurances(const string& line, const char& key);
+    static vector<int> CountUniqueOccurancesSize(const string& line, const char& key);
+
     static int GetLineCount(const string& filePath);
     static int GetSizeOfLineWithoutKey(const string& line, string key);
 
     static int SumVector(vector<int> values);
+
+    static int IndexOf(const string& line, int startIndex, char key);
 
     //(line, key)
     static bool Contains(const string& line, const string& key);

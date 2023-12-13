@@ -1,9 +1,8 @@
-#include <utility>
 #include "FileReader.h"
 #include "PQueue.h"
-#include "algorithm"
 #include <unordered_map>
-#include <math.h>
+#include <cmath>
+#include <utility>
 
 static string filePath = R"(C:\The Main File ---------\Other Stuff\Code\AdventOfCode2023\Input.txt)";
 
@@ -30,15 +29,119 @@ void DayTen(vector<vector<string>> rows2D);
 
 void DayEleven(vector<vector<string>> rows2D, vector<vector<string>> columns);
 
+void DayTwelve(vector<string> rows);
+
 int main() {
-    vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
-//    vector<string> rows = FileReader::ReadFileRows(filePath);
-    vector<vector<string>> columns = FileReader::ReadFileColumns(filePath);
+//    vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
+    vector<string> rows = FileReader::ReadFileRows(filePath);
+//    vector<vector<string>> columns = FileReader::ReadFileColumns(filePath);
 //    vector<vector<string>> cutRows = FileReader::CutRowsByKey(rows, "");
 
-
-    DayEleven(rows2D, columns);
+    DayTwelve(rows);
 }
+
+vector<int> cutVector(vector<int> v, int indexToCut){
+    vector<int> cut;
+    for (int i = indexToCut+1; i < v.size(); ++i) {
+        cut.push_back(v[i]);
+    }
+    return cut;
+}
+int countFitsPair(int length, vector<int> groups) {
+    int add = 0;
+    int secondGroupAmount = (length - (groups[1] - 1));
+    for (int i = 0; i < length; i++) {
+        int numGroup = secondGroupAmount - (i + groups[0] + 1);
+        if (numGroup <= 0) break;
+        add += numGroup;
+    }
+    return add;
+}
+int countFitsHelper(int length, vector<int> groups, int& add)
+{
+    if(groups.empty()) return 0;
+    else if(groups.size() == 1) return length - groups[0] - 1;
+    else if(groups.size() == 2) return add + countFitsPair(length, groups);
+
+    int firstGroupAmount = (length - (groups[0] - 1));
+    for (int i = 0; i < length; ++i) {
+        int l = firstGroupAmount - (i + groups[0] + 1);
+        if(l <= groups[1] + 1) break;
+        add += countFitsHelper(l, cutVector(groups, i), add);
+    }
+    return add;
+}
+int countFits(int length, vector<int> groups){
+    int add = 0;
+    return countFitsHelper(length, std::move(groups), add);
+}
+long long factorial(int n) {
+    if (n == 0 || n == 1) {
+        return 1;
+    } else {
+        return n * factorial(n - 1);
+    }
+}
+long long calculateCombinations(int n, int k) {
+    return factorial(n) / (factorial(k) * factorial(n - k));
+}
+long long choose(int length, const vector<int>& groups)
+{
+    int n = length - 1 - (FileReader::SumVector(groups) - (int)groups.size());
+    int k = (int)groups.size();
+    cout << "n: " << n << endl;
+    cout << "k: " << k << endl;
+    return calculateCombinations(n, k);
+}
+void DayTwelve(vector<string> rows){
+    for (int i = 0; i < rows.size(); ++i) {
+        vector<int> values = FileReader::StringToInt(FileReader::SplitByKey(FileReader::SplitBySpace(rows[i])[1], ","));
+
+        string hotSprings = FileReader::ReplaceLine(FileReader::SplitBySpace(rows[i])[0], "#","?");
+        vector<int> groupSize = FileReader::CountUniqueOccurancesSize(hotSprings, '?');
+    }
+
+    vector<int> testing = {1,3,1,6};
+    cout << choose(15,testing) << endl;
+
+    vector<int> testing2 = {1,1};
+    cout << choose(5, testing2);
+//    cout << countFits(9,testing2);
+
+    /*for (int i = 0; i < rows.size(); ++i) {
+        string hotSprings = FileReader::SplitBySpace(rows[i])[0];
+        int currentValuesIndex = 0;
+        vector<int> values = FileReader::StringToInt(FileReader::SplitByKey(FileReader::SplitBySpace(rows[i])[1], ","));
+        for (int j = 1; j < hotSprings.length() - 1; ++j) {
+            char prev = hotSprings[i - 1];
+            char next = hotSprings[i + 1];
+            if (hotSprings[i] == '#') {
+                bool nextFilled = true;
+                int indexOfNext = FileReader::IndexOf(hotSprings, i, '#');
+                for (int k = i; k < i + indexOfNext; ++k) {
+                    if (hotSprings[k] != '#' && hotSprings[k] != '?') {
+                        nextFilled = false;
+                        break;
+                    }
+                }
+                if (nextFilled) {
+                    prev = '.';
+                    for (int k = i; k < i + indexOfNext; ++k) {
+                        hotSprings[k] = '#';
+                    }
+                }
+                //check next values[currenValueIndex] == '#'
+                //true set prev and next = '.' also increase currentValue index
+                //false check next values.substring(i, indexOf('#')) == values[currentValuesIndex]
+                //true set that entire substring to '#'
+            }
+            hotSprings[i - 1] = prev;
+            hotSprings[i + 1] = prev;
+        }
+//        cout << "Hot Springs: " << hotSprings << endl;
+    }*/
+}
+
 
 long long findDistance(pair<long long,long long> a, pair<long long,long long> b){
     long long distance = abs(a.first - b.first) + abs(a.second - b.second);

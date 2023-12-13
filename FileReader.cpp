@@ -217,6 +217,56 @@ int FileReader::SumVector(vector<int> values) {
     return size;
 }
 
+int FileReader::CountUniqueOccurances(const string &line, const char& key) {
+    int count = 0;
+    bool inGroup;
+    for (int i = 0; i < line.length(); ++i) {
+        if (line[i] == key) {
+            if (!inGroup) {
+                inGroup = true;
+                ++count;
+            }
+        } else inGroup = false;
+    }
+    return count;
+}
+
+vector<int> FileReader::CountUniqueOccurancesSize(const string &line, const char &key) {
+    vector<int> sizes;
+    int count = 0;
+    bool inGroup;
+    for (int i = 0; i < line.length(); ++i) {
+        if (line[i] == key) {
+            count++;
+            if (!inGroup) {
+                inGroup = true;
+            }
+        }
+        else {
+            if(inGroup) {
+                sizes.push_back(count);
+                count = 0;
+            }
+            inGroup = false;
+        }
+    }
+    if(count > 0) sizes.push_back(count);
+    return sizes;
+}
+
+int FileReader::IndexOf(const string &str, int startIndex, char key) {
+    auto it = find(str.begin() + startIndex+1, str.end(), key);
+
+    // Check if the character was found
+    if (it != str.end()) {
+        // Calculate the index using std::distance
+        return std::distance(str.begin(), it);
+    } else {
+        // Return a special value (e.g., -1) to indicate that the character was not found
+        return -1;
+    }
+}
+
 //uses additional character '⁂' to compensate for the split method not accounting for the very last character
 bool FileReader::Contains(const string &line, const string &key) {
     vector<string> split = FileReader::SplitByKey(line + "⁂", key);
