@@ -27,13 +27,36 @@ void DayTwelve(vector<string> rows);
 void DayThirdteen(vector<string> rows);
 void DayFourteen(vector<vector<string>> rows);
 
+void DayFiveteen(vector<string> rows);
+
 int main() {
-    vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
-//    vector<string> rows = FileReader::ReadFileRows(filePath);
+//    vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
+    vector<string> rows = FileReader::ReadFileRows(filePath);
 //    vector<vector<string>> columns = FileReader::ReadFileColumnsByKey(filePath, " ");
 //    vector<vector<string>> cutRows = FileReader::CutRowsByKey(rows, "");
 
-    DayFourteen(rows2D);
+    DayFiveteen(rows);
+}
+
+int doHash(char c, int currentValue){
+    int value = (unsigned char)c;
+    value += currentValue;
+    value *= 17;
+    value %= 256;
+
+    currentValue = value;
+}
+void DayFiveteen(vector<string> rows){
+    vector<string> steps = FileReader::SplitByKey(rows[0], ",");
+    long long total = 0;
+    for (int i = 0; i < steps.size(); ++i) {
+        int hashValue = 0;
+        for (int j = 0; j < steps[i].length(); ++j) {
+            hashValue = doHash(steps[i][j], hashValue);
+        }
+        total += hashValue;
+    }
+    cout << "Total: " << total << endl;
 }
 
 struct rolledDir{
