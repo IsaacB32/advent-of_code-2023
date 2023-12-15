@@ -13,33 +13,131 @@ void DayThree(vector<vector<string>> rows2D, vector<string> rows);
 void DayThree_2(vector<vector<string>> rows2D, vector<string> rows);
 void DayFour(vector<string> rows);
 void DayFour_2(vector<string> rows);
-
 void DayFive(vector<vector<string>> rows);
 void DayFive_2(vector<vector<string>> rows);
 void DaySix(vector<string> rows);
 void DaySeven(vector<string> rows);
-
 void DayEight(vector<string> rows);
 void DayEight_2(vector<string> rows);
-
 void DayNine(vector<string> rows);
 void DayNine_2(vector<string> rows);
-
 void DayTen(vector<vector<string>> rows2D);
-
 void DayEleven(vector<vector<string>> rows2D, vector<vector<string>> columns);
-
 void DayTwelve(vector<string> rows);
-
 void DayThirdteen(vector<string> rows);
+void DayFourteen(vector<vector<string>> rows);
 
 int main() {
-//    vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
-    vector<string> rows = FileReader::ReadFileRows(filePath);
+    vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
+//    vector<string> rows = FileReader::ReadFileRows(filePath);
 //    vector<vector<string>> columns = FileReader::ReadFileColumnsByKey(filePath, " ");
 //    vector<vector<string>> cutRows = FileReader::CutRowsByKey(rows, "");
 
-    DayThirdteen(rows);
+    DayFourteen(rows2D);
+}
+
+struct rolledDir{
+    vector<string> lines;
+    int direction = 0;
+    int order = 0;
+    bool operator==(const rolledDir& other) const {
+        return lines == other.lines && direction == other.direction;
+    }
+};
+namespace std {
+    template<>
+    struct hash<rolledDir> {
+        std::size_t operator()(const rolledDir &rd) const {
+            // Combine the hash values of lines and direction
+            std::size_t hashValue = 0;
+            for (const auto &line: rd.lines) {
+                hashValue ^= hash<std::string>()(line) + 0x9e3779b9 + (hashValue << 6) + (hashValue >> 2);
+            }
+            hashValue ^= hash<int>()(rd.direction) + 0x9e3779b9 + (hashValue << 6) + (hashValue >> 2);
+            return hashValue;
+        }
+    };
+}
+string SwapRocks(string lineOfRocks, int& beginIndex, int i, int increment){
+    char current = lineOfRocks[i];
+    if(current == 'O'){
+        swap(lineOfRocks[i], lineOfRocks[beginIndex]);
+        beginIndex = beginIndex + increment;
+    }
+    else if(current == '#') {
+        beginIndex = i + increment;
+    }
+    return lineOfRocks;
+}
+string moveRocks(string lineOfRocks, bool isLeft){
+    int beginIndex;
+    if(!isLeft)
+    {
+        beginIndex = (int)lineOfRocks.length()-1;
+        for (int i = beginIndex; i >= 0; --i) {
+            lineOfRocks = SwapRocks(lineOfRocks, beginIndex, i, -1);
+        }
+    }
+    else
+    {
+        beginIndex = 0;
+        for (int i = 0; i < lineOfRocks.length(); ++i) {
+            lineOfRocks = SwapRocks(lineOfRocks, beginIndex, i, 1);
+        }
+    }
+    return lineOfRocks;
+}
+long long countRocks(string item){
+    long long total = 0;
+    for (int i = 0; i < item.length(); ++i) {
+        if(item[i] == 'O') total += (long long)item.length() - i;
+    }
+    return total;
+}
+void DayFourteen(vector<vector<string>> rows2D) {
+    vector<string> columns = FileReader::GetColumnsFromRows2D(rows2D);
+    vector<string> rows = FileReader::GetRowsFromRows2D(rows2D);
+
+    vector<vector<string>> savedKeys;
+    unordered_map<rolledDir, pair<vector<string>, int>> seenBefore;
+    rolledDir current;
+    current.lines = columns;
+    current.direction = 0;
+    bool direction[] = {true, true, false, false};
+
+    long long total = 0;
+    for (int bigloop = 0; bigloop < 1000000000; ++bigloop) {
+        rolledDir east;
+        for (int k = 0; k < 4; ++k) {
+            bool dir = direction[k];
+            rolledDir rolledPlatform;
+            rolledPlatform.direction = k;
+            for (int i = 0; i < current.lines.size(); ++i) {
+                string rolledItem = moveRocks(current.lines[i], dir);
+                rolledPlatform.lines.push_back(rolledItem);
+            }
+            if (k == 3) east = current;
+            current.direction = k;
+            current.lines = FileReader::FlipRowsToColumns(rolledPlatform.lines);
+            current.order = bigloop;
+        }
+        if (seenBefore.find(east) != seenBefore.end()) { //we have found duplicate
+            int loopLeft = 1000000000 - seenBefore[east].second;
+            int lengthOfLoop = seenBefore.size() - seenBefore[east].second;
+            int indexOfAnswer = (seenBefore[east].second - 1) + (loopLeft % lengthOfLoop);
+            vector<string> flippedCurrent = FileReader::FlipRowsToColumns(savedKeys[indexOfAnswer]);
+            for (const string &line: flippedCurrent) {
+                total += countRocks(line);
+            }
+            break;
+        } else
+        {
+            savedKeys.push_back(east.lines);
+            seenBefore[east].first = east.lines; //we haven't seen before
+            seenBefore[east].second = bigloop; //we haven't seen before
+        }
+    }
+    cout << "Total: " << total << endl;
 }
 
 int reflectedIndex(int reflection, int i) {return (i + abs(reflection - i) * 2) - 1;}
@@ -90,20 +188,6 @@ bool CheckReflection(vector<string> map, int& total) {
 
                 map[i][indexOfDifference] = (map[i][indexOfDifference] == '.') ? '#' : '.';
             }
-//            if (current == next) {
-//                vector<string> testingReflection;
-//                int reflectionSpace = min(reflectionIndex, (int)map.size() - reflectionIndex);
-//                int startingIndex = reflectionIndex - reflectionSpace;
-//                int endingIndex = reflectionIndex + reflectionSpace;
-//                for (int j = startingIndex; j < endingIndex; ++j) {
-//                    testingReflection.push_back(map[j]);
-//                }
-//
-//                if(testReflection(testingReflection)){
-//                    total = reflectionIndex;
-//                    return true;
-//                }
-//            }
         }
     }
     return false;
@@ -127,7 +211,6 @@ int findReflectionIndex(vector<string> rows){
     if(CheckReflection(columns, total)) return total;
     return -1;
 }
-
 void DayThirdteen(vector<string> rows){
     int total = 0;
     vector<vector<string>> map = FileReader::CutRowsByKey(rows, "");

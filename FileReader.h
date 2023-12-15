@@ -22,6 +22,10 @@ public:
     static vector<vector<string>> ReadFileColumnsByKey(const string& filePath, const string& key);
     static inline vector<vector<string>> ReadFileColumns(const string& filePath) {return ReadFileColumnsByKey(filePath, "");}
 
+    static vector<string> GetColumnsFromRows2D(vector<vector<string>> rows2D);
+    static vector<string> GetRowsFromRows2D(vector<vector<string>> rows2D);
+    static vector<string> FlipRowsToColumns(vector<string> rows);
+
     static vector<string> SplitByKey(const string& line, const string& key);
     static vector<string> SplitByKey(const string& line, const vector<string>& keys);
     static vector<string> SplitByCharacter(const string& line);

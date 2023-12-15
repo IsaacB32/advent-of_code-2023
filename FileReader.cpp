@@ -40,6 +40,47 @@ vector<vector<string>> FileReader::ReadFileColumnsByKey(const string& filePath, 
     return columns;
 }
 
+vector<string> FileReader::GetColumnsFromRows2D(vector<vector<string>> rows2D) {
+    vector<string> columns;
+    for (int i = 0; i < rows2D[0].size(); ++i) {
+        string c;
+        for (int j = 0; j < rows2D.size(); ++j) {
+            c += rows2D[j][i];
+        }
+        columns.push_back(c);
+    }
+    return columns;
+}
+vector<string> FileReader::GetRowsFromRows2D(vector<vector<string>> rows2D) {
+    vector<string> rows;
+    for (int i = 0; i < rows2D[0].size(); ++i) {
+        string c;
+        for (int j = 0; j < rows2D.size(); ++j) {
+            c += rows2D[i][j];
+        }
+        rows.push_back(c);
+    }
+    return rows;
+}
+
+vector<string> FileReader::FlipRowsToColumns(vector<string> rows) {
+    vector<string> columns;
+    int columnSize = (int)rows[0].size();
+    if(columnSize != rows.size()){
+        cout << "Columns and Rows must be same size!!" << endl;
+        return rows;
+    }
+
+    for (int i = 0; i < rows.size(); ++i) {
+        string column;
+        for (int j = 0; j < columnSize; ++j) {
+            column += rows[j][i];
+        }
+        columns.push_back(column);
+    }
+    return columns;
+}
+
 vector<string> FileReader::SplitByKey(const string& line, const string& key) {
     vector<string> cutLine;
     int startingIndex = 0;
