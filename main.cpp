@@ -74,7 +74,7 @@ struct component{
         position = pos;
     }
 
-    bool samePosition(pair<int,int> p){
+    bool samePosition(pair<int,int> p) const{
         return (p.first == position.first && p.second == position.second);
     }
     bool onlyOnePosition(pair<int,int> &p){
@@ -92,11 +92,74 @@ struct component{
         os << "Pos (" << other.position.first << ", " << other.position.second << ") Type: " << other.componentType;
         return os;
     }
+    bool operator==(const component& other) const{
+        return this->samePosition(other.position);
+    }
 };
 bool isComponent(char c)
 {
    if(c == '.') return false;
    return true;
+}
+vector<component> travledComponents;
+void followLight(component starting, int direction){ // 0 = up, 1 = right, 2 = down, 3 = left
+    if(FileReader::Contains(travledComponents, starting)) return;
+    travledComponents.push_back(starting);
+
+    char componentType = starting.componentType;
+    int nextDirection = -1;
+    if(componentType == '\\'){
+        if(direction == 0) nextDirection = 3;
+        else if(direction == 1) nextDirection = 2;
+        else if(direction == 2) nextDirection = 1;
+        else nextDirection = 0;
+    }
+    else if(componentType == '/'){
+        if(direction == 0) nextDirection = 1;
+        else if(direction == 1) nextDirection = 0;
+        else if(direction == 2) nextDirection = 3;
+        else nextDirection = 2;
+    }
+    else if(componentType == '|'){
+        if(direction == 0){
+            nextDirection = 0;
+        }
+        else if(direction == 1 || direction == 3){
+            nextDirection = 0;
+            int splitDirection = 2;
+            if(starting.contraptions[splitDirection].distance != INT32_MAX){
+                component next = *starting.contraptions[splitDirection].componentType;
+                followLight(next, splitDirection);
+            }
+        }
+        else {
+            nextDirection = 2;
+        }
+    }
+    else if(componentType == '-'){
+        if(direction == 1){
+            nextDirection = 1;
+        }
+        else if(direction == 0 || direction == 2){
+            nextDirection = 1;
+            int splitDirection = 3;
+            if(starting.contraptions[splitDirection].distance != INT32_MAX){
+                component next = *starting.contraptions[splitDirection].componentType;
+                followLight(next, splitDirection);
+            }
+        }
+        else {
+            nextDirection = 3;
+        }
+    }
+
+    if(starting.contraptions[nextDirection].distance != INT32_MAX){
+        component next = *starting.contraptions[nextDirection].componentType;
+        followLight(next, nextDirection);
+    }
+    else { //the light ends
+        return;
+    }
 }
 void DaySixteen(vector<string> rows)
 {
@@ -155,16 +218,14 @@ void DaySixteen(vector<string> rows)
         copy(contraptions, contraptions + 4, current->contraptions);
     }
 
-    for (int i = 0; i < components.size(); ++i) {
-        component current = components[i];
-        cout << current << endl;
-        for (int j = 0; j < 4; ++j) {
-            if(current.contraptions[j].distance != INT32_MAX){
-                cout << "Contraption (" << j << "): " << *current.contraptions[j].componentType << endl;
-            }
-        }
-        cout << endl;
+    followLight(components[0], 1);
+    
+    int distance = 0;
+    for (int i = 0; i < travledComponents.size()-1; ++i) {
+        distance += abs(travledComponents[i].position.first - travledComponents[i + 1].position.first) + abs(travledComponents[i].position.second - travledComponents[i + 1].position.second);
     }
+    distance += travledComponents.size();
+    cout << "total distance: " << distance;
 }
 
 int doHash(char c, int currentValue){
