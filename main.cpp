@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <cmath>
 #include <utility>
+#include <algorithm>
 
 static string filePath = R"(C:\The Main File ---------\Other Stuff\Code\AdventOfCode2023\Input.txt)";
 
@@ -29,13 +30,141 @@ void DayFourteen(vector<vector<string>> rows);
 
 void DayFiveteen(vector<string> rows);
 
+void DaySixteen(vector<string> rows);
+
 int main() {
 //    vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
     vector<string> rows = FileReader::ReadFileRows(filePath);
 //    vector<vector<string>> columns = FileReader::ReadFileColumnsByKey(filePath, " ");
 //    vector<vector<string>> cutRows = FileReader::CutRowsByKey(rows, "");
 
-    DayFiveteen(rows);
+    DaySixteen(rows);
+}
+struct component;
+struct contraption;
+
+struct contraption{
+    int distance;
+    component* componentType;
+
+    contraption(){
+        distance = INT32_MAX;
+        componentType = nullptr;
+    }
+    contraption(int d, component* ct){
+        distance = d;
+        componentType = ct;
+    }
+};
+struct component{
+    contraption contraptions[4]; // 0 = north, 1 = east, 2 = south, 3 = west;
+    char componentType;
+    pair<int,int> position;
+
+    component(){
+        componentType = '.';
+    }
+    component(pair<int,int> pos){
+        componentType = '.';
+        position = pos;
+    }
+    component(contraption c[4], char ct, pair<int,int> pos) {
+        copy(c, c + 4, contraptions);
+        componentType = ct;
+        position = pos;
+    }
+
+    bool samePosition(pair<int,int> p){
+        return (p.first == position.first && p.second == position.second);
+    }
+    bool onlyOnePosition(pair<int,int> &p){
+        pair<int,int> savedPos = {p.first, p.second};
+        if(p.first == position.first) {
+            p.first = -1;
+        }
+        else if(p.second == position.first){
+            p.second = -1;
+        }
+        return !samePosition(savedPos) && (savedPos.first == position.first || savedPos.second == position.second);
+    }
+
+    friend ostream &operator<<(ostream& os, const component& other)  {
+        os << "Pos (" << other.position.first << ", " << other.position.second << ") Type: " << other.componentType;
+        return os;
+    }
+};
+bool isComponent(char c)
+{
+   if(c == '.') return false;
+   return true;
+}
+void DaySixteen(vector<string> rows)
+{
+    vector<component> components;
+    for (int i = 0; i < rows.size(); ++i) {
+        for (int j = 0; j < rows[i].size(); ++j) {
+            if(isComponent(rows[i][j])){
+                component c({i, j});
+                c.componentType = rows[i][j];
+                components.push_back(c);
+            }
+        }
+    }
+
+    for (int i = 0; i < components.size(); ++i) {
+
+        //reset shortest
+        pair<int,component*> shortestSideDistance[4];
+        for (int h = 0; h < 4; ++h) {
+            shortestSideDistance[h] = {INT32_MAX, &components[0]};
+        }
+
+        component* current = &components[i];
+        contraption contraptions[4];
+        for (int j = 0; j < components.size(); ++j) {
+            pair<int,int> lookingPos = components[j].position;
+            if(current->onlyOnePosition(lookingPos)){
+                int distance;
+                pair<int,int> index;
+                if(lookingPos.first == -1){ //x
+                    distance = current->position.second - components[j].position.second;
+                    index.first = 1; //less than
+                    index.second = 3; //greater than
+                }
+                else { //y
+                    distance = current->position.first - components[j].position.first;
+                    index.first = 2; //less than
+                    index.second = 0; //greater than
+                }
+
+                if(distance < 0){
+                    int absDis = abs(distance);
+                    if(absDis < shortestSideDistance[index.first].first) shortestSideDistance[index.first] = {absDis, &components[j]};
+                }
+                else {
+                    if (distance < shortestSideDistance[index.second].first) shortestSideDistance[index.second] = {distance, &components[j]};
+                }
+            }
+        }
+        for (int j = 0; j < 4; ++j) {
+            if(shortestSideDistance[j].first != INT32_MAX){
+                contraption con(shortestSideDistance[j].first, shortestSideDistance[j].second);
+                contraptions[j] = con;
+            }
+        }
+        copy(contraptions, contraptions + 4, current->contraptions);
+    }
+
+    for (int i = 0; i < components.size(); ++i) {
+        component current = components[i];
+        cout << current << endl;
+        for (int j = 0; j < 4; ++j) {
+            if(current.contraptions[j].distance != INT32_MAX){
+                cout << "Contraption (" << j << "): " << *current.contraptions[j].componentType << endl;
+            }
+        }
+        cout << endl;
+    }
 }
 
 int doHash(char c, int currentValue){
@@ -47,7 +176,6 @@ int doHash(char c, int currentValue){
     currentValue = value;
     return currentValue;
 }
-
 struct command{
     string label;
     int focusLength;
