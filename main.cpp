@@ -45,16 +45,69 @@ int doHash(char c, int currentValue){
     value %= 256;
 
     currentValue = value;
+    return currentValue;
 }
-void DayFiveteen(vector<string> rows){
+
+struct command{
+    string label;
+    int focusLength;
+    bool operator==(const command& other) const {
+        return label == other.label;
+    }
+};
+void DayFiveteen(vector<string> rows) {
+    vector<command> hashMap[256];
     vector<string> steps = FileReader::SplitByKey(rows[0], ",");
     long long total = 0;
     for (int i = 0; i < steps.size(); ++i) {
         int hashValue = 0;
-        for (int j = 0; j < steps[i].length(); ++j) {
-            hashValue = doHash(steps[i][j], hashValue);
+        command currentCommand;
+        bool hasEqual = false;
+        if (FileReader::Contains(steps[i], "=")) {
+            string label = FileReader::SplitByKey(steps[i], "=")[0];
+            int lenseIndex = stoi(FileReader::SplitByKey(steps[i], "=")[1]);
+            currentCommand.label = label;
+            currentCommand.focusLength = lenseIndex;
+            hasEqual = true;
+        } else {
+            currentCommand.label = FileReader::SplitByKey(steps[i], "-")[0];
+            currentCommand.focusLength = -1;
         }
-        total += hashValue;
+
+        for (int j = 0; j < currentCommand.label.size(); ++j) {
+            hashValue = doHash(currentCommand.label[j], hashValue);
+        }
+
+        vector<command> box = hashMap[hashValue];
+        if (hasEqual) {
+            if (!box.empty() && FileReader::Contains(box, currentCommand)) {
+                auto indexBefore = find(box.begin(), box.end(), currentCommand);
+                box.erase(std::remove(box.begin(), box.end(), currentCommand), box.end());
+                box.insert(indexBefore, currentCommand);
+            }
+            else{
+                box.push_back(currentCommand);
+            }
+        }
+        else{
+            if (!box.empty() && FileReader::Contains(box, currentCommand)) {
+                auto indexBefore = find(box.begin(), box.end(), currentCommand);
+                box.erase(std::remove(box.begin(), box.end(), currentCommand), box.end());
+            }
+        }
+        hashMap[hashValue] = box;
+    }
+
+    for (int i = 0; i < 256; ++i) {
+        vector<command> box = hashMap[i];
+        if(!box.empty())
+        {
+            int lense = 0;
+            for (int j = 0; j < box.size(); ++j) {
+                lense += (1 + i) * (j+1) * box[j].focusLength;
+            }
+            total += lense;
+        }
     }
     cout << "Total: " << total << endl;
 }
