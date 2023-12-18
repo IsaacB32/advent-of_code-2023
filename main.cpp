@@ -30,18 +30,29 @@ void DayFourteen(vector<vector<string>> rows);
 
 void DayFiveteen(vector<string> rows);
 
-void DaySixteen(vector<string> rows);
+void DaySixteen_2(vector<string> rows);
+void travelAlongMap(vector<vector<char>>& map, pair<int,int> start, pair<int,int> end);
 
 int main() {
 //    vector<vector<string>> rows2D = FileReader::ReadFileRowsByKey(filePath, "");
     vector<string> rows = FileReader::ReadFileRows(filePath);
 //    vector<vector<string>> columns = FileReader::ReadFileColumnsByKey(filePath, " ");
 //    vector<vector<string>> cutRows = FileReader::CutRowsByKey(rows, "");
-
-    DaySixteen(rows);
+//    vector<vector<char>> map;
+//    for (int i = 0; i < rows.size(); ++i) {
+//        vector<char> row;
+//        for (int j = 0; j < rows[i].size(); ++j) {
+//            row.push_back('.');
+//        }
+//        map.push_back(row);
+//    }
+//    travelAlongMap(map, {0,0},{0,1});
+//    FileReader::PrintVector(map);
+    DaySixteen_2(rows);
 }
 struct component;
 struct contraption;
+int DaySixteen(vector<string> rows, component c, int direction);
 
 struct contraption{
     int distance;
@@ -101,10 +112,51 @@ bool isComponent(char c)
    if(c == '.') return false;
    return true;
 }
+void travelAlongMap(vector<vector<char>>& map, pair<int,int> start, pair<int,int> end){
+    if(start.first == end.first && start.second == end.second){
+        map[start.first][start.second] = '#';
+        return;
+    }
+    else if(start.first != end.first && start.second != end.second){
+        return;
+    }
+
+    int constantPos = 0;
+    bool isRowConstant = false;
+    pair<int,int> changingRange;
+    if(start.first == end.first)
+    {
+        constantPos = start.first;
+        isRowConstant = true;
+    }
+    else if(start.second == end.second) constantPos = start.second;
+
+    if(start.first != end.first) {
+        int minValue = min(start.first, end.first);
+        int maxValue = max(start.first, end.first);
+        changingRange = {minValue, maxValue};
+    }
+    else if(start.second != end.second) {
+        int minValue = min(start.second, end.second);
+        int maxValue = max(start.second, end.second);
+        changingRange = {minValue, maxValue};
+    }
+
+    for (int i = changingRange.first; i <= changingRange.second; ++i) {
+        if(isRowConstant){
+            map[constantPos][i] = '#';
+        }
+        else{
+            map[i][constantPos] = '#';
+        }
+    }
+}
 vector<component> travledComponents;
-void followLight(component starting, int direction){ // 0 = up, 1 = right, 2 = down, 3 = left
-    if(FileReader::Contains(travledComponents, starting)) return;
-    travledComponents.push_back(starting);
+vector<pair<component,component>> seenComponentPairs;
+vector<pair<int,int>> seenPositions;
+int rowSize = 10;
+void followLight(component starting, int direction, vector<vector<char>>& map){ // 0 = up, 1 = right, 2 = down, 3 = left
+     travledComponents.push_back(starting); //if(!FileReader::Contains(travledComponents, starting))
 
     char componentType = starting.componentType;
     int nextDirection = -1;
@@ -129,7 +181,16 @@ void followLight(component starting, int direction){ // 0 = up, 1 = right, 2 = d
             int splitDirection = 2;
             if(starting.contraptions[splitDirection].distance != INT32_MAX){
                 component next = *starting.contraptions[splitDirection].componentType;
-                followLight(next, splitDirection);
+                pair<component,component> seen = {starting, next};
+                if(!FileReader::Contains(seenComponentPairs, seen)){
+                    seenComponentPairs.emplace_back(starting,next);
+                    travelAlongMap(map, starting.position, next.position);
+                    followLight(next, splitDirection, map);
+                }
+            }
+            else if(!FileReader::Contains(seenPositions, starting.position)){
+                seenPositions.push_back(starting.position);
+                travelAlongMap(map, starting.position, {rowSize-1, starting.position.second});
             }
         }
         else {
@@ -145,7 +206,16 @@ void followLight(component starting, int direction){ // 0 = up, 1 = right, 2 = d
             int splitDirection = 3;
             if(starting.contraptions[splitDirection].distance != INT32_MAX){
                 component next = *starting.contraptions[splitDirection].componentType;
-                followLight(next, splitDirection);
+                pair<component,component> seen = {starting, next};
+                if(!FileReader::Contains(seenComponentPairs, seen)){
+                    seenComponentPairs.emplace_back(starting,next);
+                    travelAlongMap(map, starting.position, next.position);
+                    followLight(next, splitDirection, map);
+                }
+            }
+            else if(!FileReader::Contains(seenPositions, starting.position)){
+                seenPositions.push_back(starting.position);
+                travelAlongMap(map, starting.position, {starting.position.first, 0});
             }
         }
         else {
@@ -155,14 +225,46 @@ void followLight(component starting, int direction){ // 0 = up, 1 = right, 2 = d
 
     if(starting.contraptions[nextDirection].distance != INT32_MAX){
         component next = *starting.contraptions[nextDirection].componentType;
-        followLight(next, nextDirection);
+        pair<component,component> seen = {starting, next};
+        if(!FileReader::Contains(seenComponentPairs, seen)){
+            seenComponentPairs.emplace_back(starting,next);
+            travelAlongMap(map, starting.position, next.position);
+            followLight(next, nextDirection, map);
+        }
     }
-    else { //the light ends
+    else if(!FileReader::Contains(seenPositions, starting.position)){  //the light ends
+        seenPositions.push_back(starting.position);
+        if(nextDirection == 0){
+            travelAlongMap(map, starting.position, {0, starting.position.second});
+        }
+        else if(nextDirection == 1){
+            travelAlongMap(map, starting.position, {starting.position.first, rowSize-1});
+        }
+        else if(nextDirection == 2){
+            travelAlongMap(map, starting.position, {rowSize-1, starting.position.second});
+        }
+        else{ //3
+            travelAlongMap(map, starting.position, {starting.position.first, 0});
+        }
         return;
     }
 }
-void DaySixteen(vector<string> rows)
-{
+vector<component> findClosestComponents(const vector<component>& components, int startingSide){
+    vector<component> closestComp;
+    for (int i = 0; i < rowSize; ++i) {
+        pair<int,int> currentPos;
+        if(startingSide == 0) currentPos = {0, i};
+        else if(startingSide == 1) currentPos = {i, rowSize-1};
+        else if(startingSide == 2) currentPos = {rowSize-1, i};
+        else if(startingSide == 3) currentPos = {i, 0};
+        for (int j = 0; j < rowSize; ++j) {
+            
+        }
+        
+    }
+    return closestComp;
+}
+void DaySixteen_2(vector<string> rows){
     vector<component> components;
     for (int i = 0; i < rows.size(); ++i) {
         for (int j = 0; j < rows[i].size(); ++j) {
@@ -173,9 +275,7 @@ void DaySixteen(vector<string> rows)
             }
         }
     }
-
     for (int i = 0; i < components.size(); ++i) {
-
         //reset shortest
         pair<int,component*> shortestSideDistance[4];
         for (int h = 0; h < 4; ++h) {
@@ -218,15 +318,38 @@ void DaySixteen(vector<string> rows)
         copy(contraptions, contraptions + 4, current->contraptions);
     }
 
-    followLight(components[0], 1);
-    
-    int distance = 0;
-    for (int i = 0; i < travledComponents.size()-1; ++i) {
-        distance += abs(travledComponents[i].position.first - travledComponents[i + 1].position.first) + abs(travledComponents[i].position.second - travledComponents[i + 1].position.second);
+    int maxSize = 0;
+    //0 = top side going down = 2
+    //1 = left side going right = 3
+    //2 = down side going up = 0
+    //3 = right side going left = 1
+    for (int j = 0; j < 4; ++j) {
+        int dir = (j + 2) % 2;
+//        cout << dir << endl;
+        vector<component> closestComponents = findClosestComponents(components, j);
+        for (int i = 0; i < closestComponents.size(); ++i) {
+            cout << closestComponents[i] << endl;
+//            int testingSize = DaySixteen(rows, closestComponents[i], dir);
+//            if (testingSize > maxSize) maxSize = testingSize;
+        }
     }
-    distance += travledComponents.size();
-    cout << "total distance: " << distance;
+    cout << "Electric: " << maxSize << endl;
 }
+int DaySixteen(vector<string> rows, component startingComponent, int direction)
+{
+    vector<vector<char>> map;
+    for (int i = 0; i < rows.size(); ++i) {
+        vector<char> row;
+        for (int j = 0; j < rows[i].size(); ++j) {
+            row.push_back('.');
+        }
+        map.push_back(row);
+    }
+    followLight(startingComponent, direction, map);
+//    FileReader::PrintVector(map);
+    int totalSize = FileReader::CountOccurances(map, '#');
+    return totalSize;
+} //7038 (high)
 
 int doHash(char c, int currentValue){
     int value = (unsigned char)c;

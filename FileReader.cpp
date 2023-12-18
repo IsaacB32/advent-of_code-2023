@@ -258,6 +258,16 @@ int FileReader::SumVector(vector<int> values) {
     return size;
 }
 
+int FileReader::CountOccurances(vector<vector<char>> rows, const char &key) {
+    int count = 0;
+    for (int i = 0; i < rows.size(); ++i) {
+        for (int j = 0; j < rows[i].size(); ++j) {
+            if(rows[i][j] == key) count++;
+        }
+    }
+    return count;
+}
+
 int FileReader::CountUniqueOccurances(const string &line, const char& key) {
     int count = 0;
     bool inGroup;

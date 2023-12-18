@@ -45,6 +45,7 @@ public:
     static vector<int> StringToInt(vector<string> integerList);
     static vector<long long> StringToLong(vector<string> integerList);
 
+    static int CountOccurances(vector<vector<char>> rows, const char& key);
     static int CountUniqueOccurances(const string& line, const char& key);
     static vector<int> CountUniqueOccurancesSize(const string& line, const char& key);
 
